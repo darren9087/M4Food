@@ -1,10 +1,9 @@
-﻿namespace M4Food
+﻿namespace M4Food;
+
+public partial class AppShell : Shell
 {
-    public partial class AppShell : Shell
+    public AppShell()
     {
-        public AppShell()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }
