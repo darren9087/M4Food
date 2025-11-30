@@ -8,11 +8,11 @@ using Plugin.Firebase.Auth.Google;
 
 namespace M4Food.Views;
 
-public partial class LoginPage : ContentPage
+public partial class SignUpPage : ContentPage
 {
     private readonly IFirebaseAuth _firebaseAuth;
 
-    public LoginPage()
+    public SignUpPage()
     {
         InitializeComponent();
         this.Loaded += OnPageLoaded;
@@ -21,24 +21,22 @@ public partial class LoginPage : ContentPage
         _firebaseAuth = CrossFirebaseAuth.Current;
     }
 
-    // UPDATED ANIMATION LOGIC - Including Guest Button
+    // Animation on page load
     private async void OnPageLoaded(object? sender, EventArgs e)
     {
         // Set initial state
         LogoBorder.Opacity = 0;
         WelcomeText.Opacity = 0;
-        LoginForm.Opacity = 0;
+        SignUpForm.Opacity = 0;
         Separator.Opacity = 0;
         GoogleButton.Opacity = 0;
-        GuestButton.Opacity = 0;
         Footer.Opacity = 0;
 
         LogoBorder.TranslationY = 30;
         WelcomeText.TranslationY = 30;
-        LoginForm.TranslationY = 30;
+        SignUpForm.TranslationY = 30;
         Separator.TranslationY = 30;
         GoogleButton.TranslationY = 30;
-        GuestButton.TranslationY = 30;
         Footer.TranslationY = 30;
 
         // Start animations
@@ -57,8 +55,8 @@ public partial class LoginPage : ContentPage
         await Task.Delay(50);
 
         await Task.WhenAll(
-            LoginForm.FadeTo(1, 400, Easing.CubicOut),
-            LoginForm.TranslateTo(0, 0, 400, Easing.CubicOut)
+            SignUpForm.FadeTo(1, 400, Easing.CubicOut),
+            SignUpForm.TranslateTo(0, 0, 400, Easing.CubicOut)
         );
 
         await Task.Delay(50);
@@ -74,22 +72,27 @@ public partial class LoginPage : ContentPage
         );
 
         await Task.WhenAll(
-            GuestButton.FadeTo(1, 400, Easing.CubicOut),
-            GuestButton.TranslateTo(0, 0, 400, Easing.CubicOut)
-        );
-
-        await Task.WhenAll(
             Footer.FadeTo(1, 400, Easing.CubicOut),
             Footer.TranslateTo(0, 0, 400, Easing.CubicOut)
         );
     }
 
-    private async void OnLoginClicked(object sender, EventArgs e)
+    private async void OnSignUpClicked(object sender, EventArgs e)
     {
         try
         {
+            // Get input values
+            var username = UsernameEntry.Text?.Trim();
             var email = EmailEntry.Text?.Trim();
             var password = PasswordEntry.Text;
+            var confirmPassword = ConfirmPasswordEntry.Text;
+
+            // Validate input
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                await DisplayAlert("Error", "Please enter a username.", "OK");
+                return;
+            }
 
             if (string.IsNullOrWhiteSpace(email))
             {
@@ -99,45 +102,71 @@ public partial class LoginPage : ContentPage
 
             if (string.IsNullOrWhiteSpace(password))
             {
-                await DisplayAlert("Error", "Please enter your password.", "OK");
+                await DisplayAlert("Error", "Please enter a password.", "OK");
                 return;
             }
 
-            // SignInWithEmailAndPasswordAsync returns IFirebaseUser directly
-            var user = await _firebaseAuth.SignInWithEmailAndPasswordAsync(email, password);
+            if (password.Length < 6)
+            {
+                await DisplayAlert("Error", "Password must be at least 6 characters long.", "OK");
+                return;
+            }
+
+            if (password != confirmPassword)
+            {
+                await DisplayAlert("Error", "Passwords do not match.", "OK");
+                return;
+            }
+
+            // CreateUserAsync returns IFirebaseUser directly
+            var user = await _firebaseAuth.CreateUserAsync(email, password);
 
             if (user != null)
             {
-                await DisplayAlert("Success", $"Welcome back, {user.Email}!", "OK");
-                // TODO: Navigate to main page
+                // Update user profile with username
+                // Note: You may need to save the username to Firestore or Realtime Database
+
+                await DisplayAlert("Success", $"Account created successfully! Welcome, {username}!", "OK");
+
+                // Navigate back to login or to main page
+                await Navigation.PopAsync();
+                // Or navigate to main page:
                 // await Shell.Current.GoToAsync("//MainPage");
             }
         }
         catch (Exception ex)
         {
+            // Handle Firebase authentication errors
             string errorMessage = ex.Message switch
             {
-                var msg when msg.Contains("invalid-email") || msg.Contains("INVALID_EMAIL") => "Invalid email address format.",
-                var msg when msg.Contains("user-disabled") || msg.Contains("USER_DISABLED") => "This account has been disabled.",
-                var msg when msg.Contains("user-not-found") || msg.Contains("USER_NOT_FOUND") => "No account found with this email.",
-                var msg when msg.Contains("wrong-password") || msg.Contains("WRONG_PASSWORD") || msg.Contains("INVALID_PASSWORD") => "Incorrect password.",
-                var msg when msg.Contains("network") || msg.Contains("NETWORK") => "Network error. Please check your internet connection.",
-                _ => $"Login failed: {ex.Message}"
+                var msg when msg.Contains("invalid-email") || msg.Contains("INVALID_EMAIL")
+                    => "Invalid email address format.",
+                var msg when msg.Contains("email-already-in-use") || msg.Contains("EMAIL_EXISTS")
+                    => "This email address is already registered.",
+                var msg when msg.Contains("weak-password") || msg.Contains("WEAK_PASSWORD")
+                    => "Password is too weak. Please use a stronger password.",
+                var msg when msg.Contains("network") || msg.Contains("NETWORK")
+                    => "Network error. Please check your internet connection.",
+                var msg when msg.Contains("operation-not-allowed")
+                    => "Email/password accounts are not enabled. Please contact support.",
+                _ => $"Sign up failed: {ex.Message}"
             };
 
-            await DisplayAlert("Login Failed", errorMessage, "OK");
+            await DisplayAlert("Sign Up Failed", errorMessage, "OK");
         }
     }
 
-    private async void OnForgotPasswordTapped(object sender, EventArgs e)
+    private async void OnSignInTapped(object sender, EventArgs e)
     {
-        await DisplayAlert("Forgot Password", "Navigate to password reset page or send reset email.", "OK");
+        // Navigate back to login page
+        await Navigation.PopAsync();
     }
 
-    private async void OnGoogleSignInTapped(object sender, EventArgs e)
+    private async void OnGoogleSignUpTapped(object sender, EventArgs e)
     {
         try
         {
+            // Button press animation
             if (sender is Grid grid && grid.Parent is Border border)
             {
                 await border.ScaleTo(0.9, 100, Easing.CubicOut);
@@ -145,20 +174,24 @@ public partial class LoginPage : ContentPage
             }
 
 #if ANDROID
+            // Google Sign-Up with Firebase on Android
             var googleAuth = CrossFirebaseAuthGoogle.Current;
-            // Use SignInWithGoogleAsync instead of SignInAsync
+
+            // Use SignInWithGoogleAsync - returns IFirebaseUser directly
             var user = await googleAuth.SignInWithGoogleAsync();
 
             if (user != null)
             {
-                await DisplayAlert("Success", $"Signed in as {user.Email}.", "OK");
-                // TODO: Navigate to main page
-                // await Shell.Current.GoToAsync("//MainPage");
+                await DisplayAlert("Success", $"Account created with Google! Welcome, {user.Email}!", "OK");
+
+                // Navigate to your main/home page after successful Google sign-up
+                await Navigation.PopAsync();
+                // Or: await Shell.Current.GoToAsync("//MainPage");
             }
 #else
             await DisplayAlert(
                 "Not Supported",
-                "Google Sign-In is currently only supported on Android.",
+                "Google Sign-Up is currently only supported on Android. iOS and other platforms require additional setup.",
                 "OK");
 #endif
         }
@@ -168,7 +201,7 @@ public partial class LoginPage : ContentPage
             {
                 var msg when msg.Contains("cancelled", StringComparison.OrdinalIgnoreCase)
                     || msg.Contains("canceled", StringComparison.OrdinalIgnoreCase)
-                        => "Sign in was cancelled.",
+                        => "Sign up was cancelled.",
                 var msg when msg.Contains("network", StringComparison.OrdinalIgnoreCase)
                         => "Network error. Please check your internet connection.",
                 var msg when msg.Contains("account-exists-with-different-credential", StringComparison.OrdinalIgnoreCase)
@@ -176,25 +209,11 @@ public partial class LoginPage : ContentPage
                 var msg when msg.Contains("invalid-credential", StringComparison.OrdinalIgnoreCase)
                         => "The credential is invalid or has expired.",
                 var msg when msg.Contains("operation-not-allowed", StringComparison.OrdinalIgnoreCase)
-                        => "Google sign-in is not enabled. Please check Firebase console settings.",
-                _ => $"Google sign-in failed: {ex.Message}"
+                        => "Google sign-up is not enabled. Please check Firebase console settings.",
+                _ => $"Google sign-up failed: {ex.Message}"
             };
 
-            await DisplayAlert("Sign In Failed", errorMessage, "OK");
+            await DisplayAlert("Sign Up Failed", errorMessage, "OK");
         }
-    }
-
-    private async void OnSignUpTapped(object sender, EventArgs e)
-    {
-        // Navigate to Sign Up Page
-        await Navigation.PushAsync(new SignUpPage());
-    }
-
-    private async void OnGuestClicked(object sender, EventArgs e)
-    {
-        // Navigate to main page as guest
-        await DisplayAlert("Guest Mode", "Continuing as guest...", "OK");
-        // TODO: Navigate to main page without authentication
-        // await Shell.Current.GoToAsync("//MainPage");
     }
 }
