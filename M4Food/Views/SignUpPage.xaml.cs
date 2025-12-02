@@ -79,81 +79,78 @@ public partial class SignUpPage : ContentPage
 
     private async void OnSignUpClicked(object sender, EventArgs e)
     {
+        // Get input values
+        var username = UsernameEntry.Text?.Trim();
+        var email = EmailEntry.Text?.Trim();
+        var password = PasswordEntry.Text;
+        var confirmPassword = ConfirmPasswordEntry.Text;
+
+        // Validate input
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            await DisplayAlert("Error", "Please enter a username.", "OK");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            await DisplayAlert("Error", "Please enter your email address.", "OK");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            await DisplayAlert("Error", "Please enter a password.", "OK");
+            return;
+        }
+
+        if (password.Length < 6)
+        {
+            await DisplayAlert("Error", "Password must be at least 6 characters long.", "OK");
+            return;
+        }
+
+        if (password != confirmPassword)
+        {
+            await DisplayAlert("Error", "Passwords do not match.", "OK");
+            return;
+        }
+
+        // UI TESTING MODE - Direct navigation without Firebase
+        await DisplayAlert("Success", $"Account created successfully! Welcome, {username}!", "OK");
+        await Navigation.PushAsync(new MainPage());
+
+        /* UNCOMMENT THIS WHEN READY FOR REAL FIREBASE AUTH
         try
         {
-            // Get input values
-            var username = UsernameEntry.Text?.Trim();
-            var email = EmailEntry.Text?.Trim();
-            var password = PasswordEntry.Text;
-            var confirmPassword = ConfirmPasswordEntry.Text;
-
-            // Validate input
-            if (string.IsNullOrWhiteSpace(username))
-            {
-                await DisplayAlert("Error", "Please enter a username.", "OK");
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                await DisplayAlert("Error", "Please enter your email address.", "OK");
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(password))
-            {
-                await DisplayAlert("Error", "Please enter a password.", "OK");
-                return;
-            }
-
-            if (password.Length < 6)
-            {
-                await DisplayAlert("Error", "Password must be at least 6 characters long.", "OK");
-                return;
-            }
-
-            if (password != confirmPassword)
-            {
-                await DisplayAlert("Error", "Passwords do not match.", "OK");
-                return;
-            }
-
-            // CreateUserAsync returns IFirebaseUser directly
             var user = await _firebaseAuth.CreateUserAsync(email, password);
-
+            
             if (user != null)
             {
-                // Update user profile with username
-                // Note: You may need to save the username to Firestore or Realtime Database
-
                 await DisplayAlert("Success", $"Account created successfully! Welcome, {username}!", "OK");
-
-                // Navigate back to login or to main page
-                await Navigation.PopAsync();
-                // Or navigate to main page:
-                // await Shell.Current.GoToAsync("//MainPage");
+                await Navigation.PushAsync(new MainPage());
             }
         }
         catch (Exception ex)
         {
-            // Handle Firebase authentication errors
             string errorMessage = ex.Message switch
             {
-                var msg when msg.Contains("invalid-email") || msg.Contains("INVALID_EMAIL")
+                var msg when msg.Contains("invalid-email") || msg.Contains("INVALID_EMAIL") 
                     => "Invalid email address format.",
-                var msg when msg.Contains("email-already-in-use") || msg.Contains("EMAIL_EXISTS")
+                var msg when msg.Contains("email-already-in-use") || msg.Contains("EMAIL_EXISTS") 
                     => "This email address is already registered.",
-                var msg when msg.Contains("weak-password") || msg.Contains("WEAK_PASSWORD")
+                var msg when msg.Contains("weak-password") || msg.Contains("WEAK_PASSWORD") 
                     => "Password is too weak. Please use a stronger password.",
-                var msg when msg.Contains("network") || msg.Contains("NETWORK")
+                var msg when msg.Contains("network") || msg.Contains("NETWORK") 
                     => "Network error. Please check your internet connection.",
-                var msg when msg.Contains("operation-not-allowed")
+                var msg when msg.Contains("operation-not-allowed") 
                     => "Email/password accounts are not enabled. Please contact support.",
                 _ => $"Sign up failed: {ex.Message}"
             };
-
+            
             await DisplayAlert("Sign Up Failed", errorMessage, "OK");
         }
+        */
     }
 
     private async void OnSignInTapped(object sender, EventArgs e)

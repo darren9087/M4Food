@@ -86,31 +86,35 @@ public partial class LoginPage : ContentPage
 
     private async void OnLoginClicked(object sender, EventArgs e)
     {
+        // FOR UI TESTING - Skip Firebase validation
+        var email = EmailEntry.Text?.Trim();
+        var password = PasswordEntry.Text;
+
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            await DisplayAlert("Error", "Please enter your email address.", "OK");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            await DisplayAlert("Error", "Please enter your password.", "OK");
+            return;
+        }
+
+        // UI TESTING MODE - Direct navigation without Firebase
+        await DisplayAlert("Success", $"Welcome back!", "OK");
+        await Navigation.PushAsync(new MainPage());
+
+        /* UNCOMMENT THIS WHEN READY FOR REAL FIREBASE AUTH
         try
         {
-            var email = EmailEntry.Text?.Trim();
-            var password = PasswordEntry.Text;
-
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                await DisplayAlert("Error", "Please enter your email address.", "OK");
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(password))
-            {
-                await DisplayAlert("Error", "Please enter your password.", "OK");
-                return;
-            }
-
-            // SignInWithEmailAndPasswordAsync returns IFirebaseUser directly
             var user = await _firebaseAuth.SignInWithEmailAndPasswordAsync(email, password);
-
+            
             if (user != null)
             {
                 await DisplayAlert("Success", $"Welcome back, {user.Email}!", "OK");
-                // TODO: Navigate to main page
-                // await Shell.Current.GoToAsync("//MainPage");
+                await Navigation.PushAsync(new MainPage());
             }
         }
         catch (Exception ex)
@@ -124,14 +128,16 @@ public partial class LoginPage : ContentPage
                 var msg when msg.Contains("network") || msg.Contains("NETWORK") => "Network error. Please check your internet connection.",
                 _ => $"Login failed: {ex.Message}"
             };
-
+            
             await DisplayAlert("Login Failed", errorMessage, "OK");
         }
+        */
     }
 
     private async void OnForgotPasswordTapped(object sender, EventArgs e)
     {
-        await DisplayAlert("Forgot Password", "Navigate to password reset page or send reset email.", "OK");
+        // Navigate to Forget Password Page
+        await Navigation.PushAsync(new ForgetPasswordPage());
     }
 
     private async void OnGoogleSignInTapped(object sender, EventArgs e)
@@ -152,8 +158,8 @@ public partial class LoginPage : ContentPage
             if (user != null)
             {
                 await DisplayAlert("Success", $"Signed in as {user.Email}.", "OK");
-                // TODO: Navigate to main page
-                // await Shell.Current.GoToAsync("//MainPage");
+                // Navigate to MainPage
+                await Navigation.PushAsync(new MainPage());
             }
 #else
             await DisplayAlert(
@@ -192,9 +198,7 @@ public partial class LoginPage : ContentPage
 
     private async void OnGuestClicked(object sender, EventArgs e)
     {
-        // Navigate to main page as guest
-        await DisplayAlert("Guest Mode", "Continuing as guest...", "OK");
-        // TODO: Navigate to main page without authentication
-        // await Shell.Current.GoToAsync("//MainPage");
+        // Navigate to MainPage as guest
+        await Navigation.PushAsync(new MainPage());
     }
 }
