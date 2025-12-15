@@ -1,0 +1,150 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="M4Food.Views.ItemDetailPage"
+             NavigationPage.HasNavigationBar="False"
+             BackgroundColor="{StaticResource BackgroundLightColor}">
+
+    <ContentPage.Resources>
+        <Color x:Key="BackgroundLightColor">#FDF8E5</Color>
+        <Color x:Key="PrimaryActionColor">#FF6B35</Color>
+        <Color x:Key="QuantityButtonColor">#C09939</Color>
+        <Color x:Key="PrimaryTextColor">#1A1A1A</Color>
+        <Color x:Key="SecondaryTextColor">#666666</Color>
+        <Color x:Key="AccentGreenColor">#4CAF50</Color>
+        <Color x:Key="SeparatorColor">#E0E0E0</Color>
+        <Color x:Key="ImagePlaceholderColor">#EEEEEE</Color>
+        <Color x:Key="DarkTextColor">#333333</Color>
+
+        <Style TargetType="Button" x:Key="QuantityButtonStyle">
+            <Setter Property="WidthRequest" Value="44" />
+            <Setter Property="HeightRequest" Value="44" />
+            <Setter Property="CornerRadius" Value="22" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="BackgroundColor" Value="{StaticResource QuantityButtonColor}" />
+            <Setter Property="TextColor" Value="White" />
+        </Style>
+
+        <Style TargetType="Button" x:Key="BackButtonBaseStyle">
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="HeightRequest" Value="50" />
+            <Setter Property="WidthRequest" Value="50" />
+            <Setter Property="HorizontalOptions" Value="Start" />
+            <Setter Property="VerticalOptions" Value="Center" />
+            <Setter Property="TextColor" Value="{StaticResource DarkTextColor}" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="FontSize" Value="35" />
+        </Style>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto, *">
+
+        <Grid Grid.Row="0" 
+              ColumnDefinitions="Auto, *" 
+              Padding="20,10,20,10" 
+              BackgroundColor="{StaticResource BackgroundLightColor}">
+
+            <Button Grid.Column="0"
+                    Text="&lt;"
+                    Style="{StaticResource BackButtonBaseStyle}"
+                    Clicked="OnBackClicked"/>
+
+            <Label Grid.Column="1" 
+                   x:Name="NameLabel" 
+                   Text="Item Name" 
+                   FontSize="24" 
+                   FontAttributes="Bold" 
+                   TextColor="{StaticResource DarkTextColor}"
+                   VerticalOptions="Center"
+                   HorizontalTextAlignment="Center"
+                   Margin="-50,0,0,0"/>
+        </Grid>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="20" Spacing="25">
+
+                <Border BackgroundColor="{StaticResource ImagePlaceholderColor}"
+                        StrokeShape="RoundRectangle 20"
+                        HeightRequest="250"
+                        WidthRequest="300"
+                        HorizontalOptions="Center"
+                        StrokeThickness="0">
+                    <Label Text="[Image Placeholder]" 
+                           HorizontalOptions="Center" 
+                           VerticalOptions="Center" 
+                           TextColor="{StaticResource SecondaryTextColor}"/>
+                </Border>
+
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Price:" 
+                           FontSize="16" 
+                           TextColor="{StaticResource SecondaryTextColor}"/>
+                    <Label x:Name="PriceLabel"
+                           Text="RM 0.00" 
+                           FontSize="32" 
+                           FontAttributes="Bold" 
+                           TextColor="{StaticResource PrimaryActionColor}"/>
+                    <Label x:Name="StockLabel"
+                           Text="Stock: 0 available" 
+                           FontSize="14" 
+                           TextColor="{StaticResource AccentGreenColor}"/>
+                </VerticalStackLayout>
+
+                <BoxView HeightRequest="1" Color="{StaticResource SeparatorColor}" Margin="0,5,0,5"/>
+
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Description" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="{StaticResource PrimaryTextColor}"/>
+                    <Label x:Name="DescriptionLabel"
+                           Text="Loading details..." 
+                           FontSize="16" 
+                           TextColor="{StaticResource DarkTextColor}"
+                           LineHeight="1.4"/>
+                </VerticalStackLayout>
+
+                <BoxView HeightRequest="1" Color="{StaticResource SeparatorColor}" Margin="0,5,0,5"/>
+
+                <Grid ColumnDefinitions="Auto, *" ColumnSpacing="20" Margin="0,10,0,0">
+                    <HorizontalStackLayout Grid.Column="0"
+                                           Spacing="10" VerticalOptions="Center"
+                                           HorizontalOptions="End">
+                        <Label Text="Quantity:" 
+                               FontSize="18" 
+                               FontAttributes="Bold" 
+                               TextColor="{StaticResource PrimaryTextColor}"
+                               VerticalOptions="Center"/>
+
+                        <Button Text="-" 
+                                Style="{StaticResource QuantityButtonStyle}"
+                                Clicked="OnQuantityDecreased"/>
+
+                        <Label x:Name="QuantityLabel"
+                               Text="1" 
+                               FontSize="20" 
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource PrimaryTextColor}"
+                               VerticalOptions="Center"/>
+
+                        <Button Text="+" 
+                                Style="{StaticResource QuantityButtonStyle}"
+                                Clicked="OnQuantityIncreased"/>
+                    </HorizontalStackLayout>
+
+                    <Button Grid.Column="1"
+                            Text="Add to Cart"
+                            BackgroundColor="{StaticResource PrimaryActionColor}"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            FontSize="18"
+                            CornerRadius="30"
+                            HeightRequest="55"
+                            Padding="15,0" Clicked="OnAddToCartClicked"/>
+                </Grid>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

@@ -34,7 +34,7 @@ namespace M4Food.Views
             await DisplayAlert("Category Filter", $"Filtering by: {category}", "OK");
         }
 
-        // 3. Food Item Tap Handler
+        // 3. Food Item Tap Handler (MODIFIED: Navigate to ItemDetailPage)
         private async void OnFoodItemTapped(object sender, EventArgs e)
         {
             if (sender is VisualElement element)
@@ -49,7 +49,8 @@ namespace M4Food.Views
                 itemName = param;
             }
 
-            await DisplayAlert("Item Selected", $"You clicked on {itemName}", "OK");
+            // Navigate to ItemDetailPage, and pass the item name
+            await Navigation.PushAsync(new ItemDetailPage(itemName));
         }
 
         // 4. Free Delivery Promo
@@ -78,10 +79,10 @@ namespace M4Food.Views
             await DisplayAlert("Home", "You are on the Home screen.", "OK");
         }
 
-        // 8. Cart Button
+        // 8. Cart Button (MODIFIED: navigate to CartPage)
         private async void OnCartTapped(object sender, EventArgs e)
         {
-            await DisplayAlert("Cart", "Opening your shopping cart...", "OK");
+            await Navigation.PushAsync(new CartPage());
         }
 
         //9. Profile Navigation
