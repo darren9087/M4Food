@@ -6,313 +6,179 @@
     <Grid RowDefinitions="Auto,*,Auto">
 
         <StackLayout Grid.Row="0" Padding="20,15,20,15" Spacing="15" BackgroundColor="#FDF8E5">
-
             <StackLayout Orientation="Horizontal" Spacing="6" HorizontalOptions="Center">
                 <StackLayout.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnMapTapped"/>
                 </StackLayout.GestureRecognizers>
-
-                <Label Text="📍" 
-                       FontSize="20" 
-                       TextColor="#FF4B4B" 
-                       VerticalOptions="Center"/>
-
-                <Label Text="1, Jalan Universiti, 96000 Sibu..." 
-                       FontSize="15" 
-                       TextColor="#333333"
-                       FontAttributes="Bold"
-                       LineBreakMode="TailTruncation"
-                       VerticalOptions="Center"/>
-
-                <Label Text="▼" 
-                       FontSize="10" 
-                       TextColor="#666666"
-                       VerticalOptions="Center"
-                       Margin="2,2,0,0"/>
+                <Label Text="📍" FontSize="20" TextColor="#FF4B4B" VerticalOptions="Center"/>
+                <Label Text="1, Jalan Universiti, 96000 Sibu..." FontSize="15" TextColor="#333333"
+                       FontAttributes="Bold" LineBreakMode="TailTruncation" VerticalOptions="Center"/>
+                <Label Text="▼" FontSize="10" TextColor="#666666" VerticalOptions="Center" Margin="2,2,0,0"/>
             </StackLayout>
 
-            <Frame BackgroundColor="White" 
-                   CornerRadius="30" 
-                   Padding="0"
-                   HasShadow="True"
-                   BorderColor="Transparent"
-                   HeightRequest="50">
+            <Frame BackgroundColor="White" CornerRadius="30" Padding="0" HasShadow="True" BorderColor="Transparent" HeightRequest="50">
                 <Grid ColumnDefinitions="Auto,*" Padding="15,0">
-                    <Label Grid.Column="0" 
-                           Text="🔍"
-                           FontSize="18"
-                           VerticalOptions="Center"
-                           Margin="0,0,10,0"/>
-
-                    <Entry Grid.Column="1"
-                           Placeholder="Search stores and food"
-                           PlaceholderColor="#999999"
-                           TextColor="#1A1A1A"
-                           FontSize="15"
-                           BackgroundColor="Transparent"
-                           VerticalOptions="Center"/>
+                    <Label Grid.Column="0" Text="🔍" FontSize="18" VerticalOptions="Center" Margin="0,0,10,0"/>
+                    <Entry Grid.Column="1" Placeholder="Search stores and food" PlaceholderColor="#999999"
+                           TextColor="#1A1A1A" FontSize="15" BackgroundColor="Transparent" VerticalOptions="Center"/>
                 </Grid>
             </Frame>
         </StackLayout>
 
-        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
+        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never" x:Name="ScrollViewContainer">
             <StackLayout Spacing="20" Padding="0,0,0,20">
 
-                <ScrollView Orientation="Horizontal" 
-                            HorizontalScrollBarVisibility="Never"
-                            Padding="20,0">
+                <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never" Padding="20,0">
                     <StackLayout Orientation="Horizontal" Spacing="15">
-
-                        <Frame CornerRadius="15" 
-                               Padding="0"
-                               HasShadow="False"
-                               WidthRequest="280"
-                               HeightRequest="140"
-                               BackgroundColor="#EBC656" 
-                               BorderColor="Transparent">
+                        <Frame CornerRadius="15" Padding="0" HasShadow="False" WidthRequest="280" HeightRequest="140" BackgroundColor="#EBC656" BorderColor="Transparent">
                             <Frame.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="OnFreeDeliveryTapped"/>
                             </Frame.GestureRecognizers>
                             <Grid Padding="20">
                                 <StackLayout Spacing="5" VerticalOptions="Center">
-                                    <Label Text="FREE DELIVERY" 
-                                           FontSize="20" 
-                                           FontAttributes="Bold"
-                                           TextColor="White"/>
-                                    <Label Text="On your first order" 
-                                           FontSize="14" 
-                                           TextColor="White"/>
+                                    <Label Text="FREE DELIVERY" FontSize="20" FontAttributes="Bold" TextColor="White"/>
+                                    <Label Text="On your first order" FontSize="14" TextColor="White"/>
                                 </StackLayout>
-                                <Label Text="🚚" 
-                                       FontSize="40" 
-                                       HorizontalOptions="End"
-                                       VerticalOptions="Center"/>
+                                <Label Text="🚚" FontSize="40" HorizontalOptions="End" VerticalOptions="Center"/>
                             </Grid>
                         </Frame>
-
-                        <Frame CornerRadius="15" 
-                               Padding="0"
-                               HasShadow="False"
-                               WidthRequest="280"
-                               HeightRequest="140"
-                               BackgroundColor="#4CAF50" 
-                               BorderColor="Transparent">
+                        <Frame CornerRadius="15" Padding="0" HasShadow="False" WidthRequest="280" HeightRequest="140" BackgroundColor="#4CAF50" BorderColor="Transparent">
                             <Frame.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="OnSpecialOfferingTapped"/>
                             </Frame.GestureRecognizers>
                             <Grid Padding="20">
                                 <StackLayout Spacing="5" VerticalOptions="Center">
-                                    <Label Text="50% OFF" 
-                                           FontSize="20" 
-                                           FontAttributes="Bold"
-                                           TextColor="White"/>
-                                    <Label Text="Healthy Food Special" 
-                                           FontSize="14" 
-                                           TextColor="White"/>
+                                    <Label Text="50% OFF" FontSize="20" FontAttributes="Bold" TextColor="White"/>
+                                    <Label Text="Healthy Food Special" FontSize="14" TextColor="White"/>
                                 </StackLayout>
                             </Grid>
                         </Frame>
-
                     </StackLayout>
                 </ScrollView>
 
-
                 <StackLayout Padding="20,0" Spacing="15">
-
                     <Grid ColumnDefinitions="*,Auto">
-                        <Label Grid.Column="0"
-                               Text="Your Preferred" 
-                               FontSize="20" 
-                               FontAttributes="Bold" 
-                               TextColor="#1A1A1A"/>
-                        <Label Grid.Column="1"
-                               Text="See All" 
-                               FontSize="14" 
-                               TextColor="#EBC656">
+                        <Label Grid.Column="0" Text="Your Preferred" FontSize="20" FontAttributes="Bold" TextColor="#1A1A1A"/>
+                        <Label Grid.Column="1" Text="See All" FontSize="14" TextColor="#EBC656">
                             <Label.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="OnSeeAllTapped"/>
                             </Label.GestureRecognizers>
                         </Label>
                     </Grid>
 
-                    <Grid ColumnDefinitions="*,*,*" 
-                          RowDefinitions="Auto,Auto"
-                          ColumnSpacing="10"
-                          RowSpacing="15">
-
-                        <Frame Grid.Row="0" Grid.Column="0"
-                               CornerRadius="15" Padding="10"
-                               HasShadow="False" BorderColor="Transparent"
-                               BackgroundColor="White">
+                    <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="15">
+                        <Frame Grid.Row="0" Grid.Column="0" CornerRadius="15" Padding="10" HasShadow="False" BorderColor="Transparent" BackgroundColor="White">
                             <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Bread"/>
+                                <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Artisan Bread"/>
                             </Frame.GestureRecognizers>
                             <StackLayout VerticalOptions="Center" Spacing="5">
-                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="60" WidthRequest="60" HasShadow="False" HorizontalOptions="Center">
-                                    <Frame.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Bread"/>
-                                    </Frame.GestureRecognizers>
+                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="50" WidthRequest="50" HasShadow="False" HorizontalOptions="Center" Padding="0">
+                                    <Image Source="artisanbread.png" Aspect="AspectFit" HeightRequest="50" WidthRequest="50"/>
                                 </Frame>
-                                <Label Text="Artisan Bread" 
-                                       FontSize="12" FontAttributes="Bold"
-                                       TextColor="#1A1A1A" 
-                                       HorizontalTextAlignment="Center" 
-                                       LineBreakMode="TailTruncation"/>
+                                <Label Text="Artisan Bread" FontSize="12" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation"/>
                             </StackLayout>
                         </Frame>
-
-                        <Frame Grid.Row="0" Grid.Column="1"
-                               CornerRadius="15" Padding="10"
-                               HasShadow="False" BorderColor="Transparent"
-                               BackgroundColor="White">
+                        <Frame Grid.Row="0" Grid.Column="1" CornerRadius="15" Padding="10" HasShadow="False" BorderColor="Transparent" BackgroundColor="White">
                             <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Croissant"/>
+                                <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Butter Croissant"/>
                             </Frame.GestureRecognizers>
                             <StackLayout VerticalOptions="Center" Spacing="5">
-                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="60" WidthRequest="60" HasShadow="False" HorizontalOptions="Center">
-                                    <Frame.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Croissant"/>
-                                    </Frame.GestureRecognizers>
+                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="50" WidthRequest="50" HasShadow="False" HorizontalOptions="Center" Padding="0">
+                                    <Image Source="buttercroissant.png" Aspect="AspectFit" HeightRequest="50" WidthRequest="50"/>
                                 </Frame>
-                                <Label Text="Butter Croissant" 
-                                       FontSize="12" FontAttributes="Bold"
-                                       TextColor="#1A1A1A" 
-                                       HorizontalTextAlignment="Center" 
-                                       LineBreakMode="TailTruncation"/>
+                                <Label Text="Butter Croissant" FontSize="12" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation"/>
                             </StackLayout>
                         </Frame>
-
-                        <Frame Grid.Row="0" Grid.Column="2"
-                               CornerRadius="15" Padding="10"
-                               HasShadow="False" BorderColor="Transparent"
-                               BackgroundColor="White">
+                        <Frame Grid.Row="0" Grid.Column="2" CornerRadius="15" Padding="10" HasShadow="False" BorderColor="Transparent" BackgroundColor="White">
                             <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Cake"/>
+                                <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Choco Cake"/>
                             </Frame.GestureRecognizers>
                             <StackLayout VerticalOptions="Center" Spacing="5">
-                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="60" WidthRequest="60" HasShadow="False" HorizontalOptions="Center">
-                                    <Frame.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Cake"/>
-                                    </Frame.GestureRecognizers>
+                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="50" WidthRequest="50" HasShadow="False" HorizontalOptions="Center" Padding="0">
+                                    <Image Source="chococake.png" Aspect="AspectFit" HeightRequest="50" WidthRequest="50"/>
                                 </Frame>
-                                <Label Text="Choco Cake" 
-                                       FontSize="12" FontAttributes="Bold"
-                                       TextColor="#1A1A1A" 
-                                       HorizontalTextAlignment="Center" 
-                                       LineBreakMode="TailTruncation"/>
+                                <Label Text="Choco Cake" FontSize="12" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation"/>
                             </StackLayout>
                         </Frame>
-
-                        <Frame Grid.Row="1" Grid.Column="0"
-                               CornerRadius="15" Padding="10"
-                               HasShadow="False" BorderColor="Transparent"
-                               BackgroundColor="White">
+                        <Frame Grid.Row="1" Grid.Column="0" CornerRadius="15" Padding="10" HasShadow="False" BorderColor="Transparent" BackgroundColor="White">
                             <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Donut"/>
+                                <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Glazed Donut"/>
                             </Frame.GestureRecognizers>
                             <StackLayout VerticalOptions="Center" Spacing="5">
-                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="60" WidthRequest="60" HasShadow="False" HorizontalOptions="Center">
-                                    <Frame.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Donut"/>
-                                    </Frame.GestureRecognizers>
+                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="50" WidthRequest="50" HasShadow="False" HorizontalOptions="Center" Padding="0">
+                                    <Image Source="glazeddonut.png" Aspect="AspectFit" HeightRequest="50" WidthRequest="50"/>
                                 </Frame>
-                                <Label Text="Glazed Donut" 
-                                       FontSize="12" FontAttributes="Bold"
-                                       TextColor="#1A1A1A" 
-                                       HorizontalTextAlignment="Center" 
-                                       LineBreakMode="TailTruncation"/>
+                                <Label Text="Glazed Donut" FontSize="12" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation"/>
                             </StackLayout>
                         </Frame>
-
-                        <Frame Grid.Row="1" Grid.Column="1"
-                               CornerRadius="15" Padding="10"
-                               HasShadow="False" BorderColor="Transparent"
-                               BackgroundColor="White">
+                        <Frame Grid.Row="1" Grid.Column="1" CornerRadius="15" Padding="10" HasShadow="False" BorderColor="Transparent" BackgroundColor="White">
                             <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Cookie"/>
+                                <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Choco Chip"/>
                             </Frame.GestureRecognizers>
                             <StackLayout VerticalOptions="Center" Spacing="5">
-                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="60" WidthRequest="60" HasShadow="False" HorizontalOptions="Center">
-                                    <Frame.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Cookie"/>
-                                    </Frame.GestureRecognizers>
+                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="50" WidthRequest="50" HasShadow="False" HorizontalOptions="Center" Padding="0">
+                                    <Image Source="chocochip.png" Aspect="AspectFit" HeightRequest="50" WidthRequest="50"/>
                                 </Frame>
-                                <Label Text="Choco Chip" 
-                                       FontSize="12" FontAttributes="Bold"
-                                       TextColor="#1A1A1A" 
-                                       HorizontalTextAlignment="Center" 
-                                       LineBreakMode="TailTruncation"/>
+                                <Label Text="Choco Chip" FontSize="12" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation"/>
                             </StackLayout>
                         </Frame>
-
-                        <Frame Grid.Row="1" Grid.Column="2"
-                               CornerRadius="15" Padding="10"
-                               HasShadow="False" BorderColor="Transparent"
-                               BackgroundColor="White">
+                        <Frame Grid.Row="1" Grid.Column="2" CornerRadius="15" Padding="10" HasShadow="False" BorderColor="Transparent" BackgroundColor="White">
                             <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Muffin"/>
+                                <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Blueberry Muffin"/>
                             </Frame.GestureRecognizers>
                             <StackLayout VerticalOptions="Center" Spacing="5">
-                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="60" WidthRequest="60" HasShadow="False" HorizontalOptions="Center">
-                                    <Frame.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Muffin"/>
-                                    </Frame.GestureRecognizers>
+                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="50" WidthRequest="50" HasShadow="False" HorizontalOptions="Center" Padding="0">
+                                    <Image Source="muffin.png" Aspect="AspectFit" HeightRequest="50" WidthRequest="50"/>
                                 </Frame>
-                                <Label Text="Blueberry" 
-                                       FontSize="12" FontAttributes="Bold"
-                                       TextColor="#1A1A1A" 
-                                       HorizontalTextAlignment="Center" 
-                                       LineBreakMode="TailTruncation"/>
+                                <Label Text="Blueberry Muffin" FontSize="12" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation"/>
                             </StackLayout>
                         </Frame>
-
                     </Grid>
                 </StackLayout>
 
                 <StackLayout Padding="20,0,20,20" Spacing="10">
-                    <Label Text="Categories" 
-                           FontSize="18" 
-                           FontAttributes="Bold" 
-                           TextColor="#1A1A1A"/>
+                    <Label Text="Categories" FontSize="18" FontAttributes="Bold" TextColor="#1A1A1A"/>
 
                     <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
                         <StackLayout Orientation="Horizontal" Spacing="10">
-
-                            <Frame Padding="20,10" CornerRadius="20" BackgroundColor="#EBC656" HasShadow="False">
+                            <Frame Padding="20,10" CornerRadius="20" BackgroundColor="#EBC656" HasShadow="False" x:Name="AllCategoryFrame">
                                 <Frame.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="OnCategoryTapped" CommandParameter="All"/>
                                 </Frame.GestureRecognizers>
-                                <Label Text="All" TextColor="White" FontAttributes="Bold"/>
+                                <Label Text="All" TextColor="White" FontAttributes="Bold" x:Name="AllCategoryLabel"/>
                             </Frame>
-
-                            <Frame Padding="20,10" CornerRadius="20" BackgroundColor="White" BorderColor="#EBC656" HasShadow="False">
+                            <Frame Padding="20,10" CornerRadius="20" BackgroundColor="White" BorderColor="#EBC656" HasShadow="False" x:Name="BreadCategoryFrame">
                                 <Frame.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="OnCategoryTapped" CommandParameter="Bread"/>
                                 </Frame.GestureRecognizers>
-                                <Label Text="Bread" TextColor="#EBC656" FontAttributes="Bold"/>
+                                <Label Text="Bread" TextColor="#EBC656" FontAttributes="Bold" x:Name="BreadCategoryLabel"/>
                             </Frame>
-
-                            <Frame Padding="20,10" CornerRadius="20" BackgroundColor="White" BorderColor="#EBC656" HasShadow="False">
+                            <Frame Padding="20,10" CornerRadius="20" BackgroundColor="White" BorderColor="#EBC656" HasShadow="False" x:Name="CakeCategoryFrame">
                                 <Frame.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="OnCategoryTapped" CommandParameter="Cake"/>
                                 </Frame.GestureRecognizers>
-                                <Label Text="Cake" TextColor="#EBC656" FontAttributes="Bold"/>
+                                <Label Text="Cake" TextColor="#EBC656" FontAttributes="Bold" x:Name="CakeCategoryLabel"/>
                             </Frame>
-
+                            <Frame Padding="20,10" CornerRadius="20" BackgroundColor="White" BorderColor="#EBC656" HasShadow="False" x:Name="OthersCategoryFrame">
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnCategoryTapped" CommandParameter="Others"/>
+                                </Frame.GestureRecognizers>
+                                <Label Text="Others" TextColor="#EBC656" FontAttributes="Bold" x:Name="OthersCategoryLabel"/>
+                            </Frame>
                         </StackLayout>
                     </ScrollView>
                 </StackLayout>
 
+                <VerticalStackLayout x:Name="CategoryResultsSection" Padding="20,0,20,20" Spacing="10">
+                    <Label x:Name="CategoryResultsTitle" Text="Category Products (Selected: All)" FontSize="18" FontAttributes="Bold" TextColor="#1A1A1A"/>
+                    <Grid x:Name="CategoryResultsGrid" ColumnDefinitions="*,*,*" ColumnSpacing="15" RowSpacing="15" Margin="0,10,0,0">
+                    </Grid>
+                </VerticalStackLayout>
             </StackLayout>
         </ScrollView>
 
-        <Frame Grid.Row="2" 
-               BackgroundColor="#F4D03F" 
-               CornerRadius="0" 
-               Padding="0,15"
-               HasShadow="False">
+        <Frame Grid.Row="2" BackgroundColor="#F4D03F" CornerRadius="0" Padding="0,15" HasShadow="False">
             <Grid ColumnDefinitions="*,*,*">
-
                 <StackLayout Grid.Column="0" Spacing="2" HorizontalOptions="Center">
                     <StackLayout.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnHomeTapped"/>
@@ -320,7 +186,6 @@
                     <Label Text="🏠" FontSize="24" HorizontalOptions="Center" TextColor="#333333"/>
                     <Label Text="HOME" FontSize="10" FontAttributes="Bold" TextColor="#333333" HorizontalTextAlignment="Center"/>
                 </StackLayout>
-
                 <StackLayout Grid.Column="1" Spacing="2" HorizontalOptions="Center">
                     <StackLayout.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnCartTapped"/>
@@ -328,7 +193,6 @@
                     <Label Text="🛒" FontSize="24" HorizontalOptions="Center" TextColor="#333333"/>
                     <Label Text="CART" FontSize="10" FontAttributes="Bold" TextColor="#333333" HorizontalTextAlignment="Center"/>
                 </StackLayout>
-
                 <StackLayout Grid.Column="2" Spacing="2" HorizontalOptions="Center">
                     <StackLayout.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnAccountTapped"/>
@@ -336,9 +200,7 @@
                     <Label Text="👤" FontSize="24" HorizontalOptions="Center" TextColor="#333333"/>
                     <Label Text="ACCOUNT" FontSize="10" FontAttributes="Bold" TextColor="#333333" HorizontalTextAlignment="Center"/>
                 </StackLayout>
-
             </Grid>
         </Frame>
-
     </Grid>
 </ContentPage>

@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Xml;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 
 namespace M4Food.Views
@@ -44,29 +44,50 @@ namespace M4Food.Views
                 "Blueberry Muffin" => "Moist blueberry muffin, baked fresh every morning.",
                 _ => "A wonderful, freshly baked item waiting for a good home."
             };
+
+            // FIX 1: 图片加载逻辑 (假设 ItemImage 存在于 XAML)
+            string sanitizedItemName = _itemName.Replace(" ", "").ToLower();
+            // 警告: Image.Source 属性在某些旧平台上不受支持，但功能上是正确的。
+            ItemImage.Source = $"{sanitizedItemName}.png";
         }
 
         private async void OnBackClicked(object sender, EventArgs e)
         {
+            // 警告: Navigation.PopAsync() 在某些旧平台上不受支持，但功能上是正确的。
             await Navigation.PopAsync();
         }
 
-        private void OnQuantityIncreased(object sender, EventArgs e)
+        // FIX 2: 增加库存限制逻辑和 await Task.CompletedTask
+        private async void OnQuantityIncreased(object sender, EventArgs e)
         {
             if (_quantity < _availableStock)
             {
                 _quantity++;
+                // 警告: Label.Text 属性在某些旧平台上不受支持，但功能上是正确的。
                 QuantityLabel.Text = _quantity.ToString();
+
+                // FIX: 增加 await Task.CompletedTask 解决 async warning
+                await Task.CompletedTask;
+            }
+            else
+            {
+                // FIX: 增加库存上限提示
+                // 警告: DisplayAlert 在某些旧平台上不受支持，但功能上是正确的。
+                await DisplayAlert("Out of Stock", $"Maximum quantity reached. Current stock: {_availableStock}.", "OK");
             }
         }
 
-        private void OnQuantityDecreased(object sender, EventArgs e)
+        // FIX 2: 增加 await Task.CompletedTask
+        private async void OnQuantityDecreased(object sender, EventArgs e)
         {
             if (_quantity > 1)
             {
                 _quantity--;
+                // 警告: Label.Text 属性在某些旧平台上不受支持，但功能上是正确的。
                 QuantityLabel.Text = _quantity.ToString();
             }
+            // FIX: 增加 await Task.CompletedTask 解决 async warning
+            await Task.CompletedTask;
         }
 
         private async void OnAddToCartClicked(object sender, EventArgs e)
@@ -74,11 +95,8 @@ namespace M4Food.Views
             // Add the selected quantity to the Cart Service
             for (int i = 0; i < _quantity; i++)
             {
-                // Assuming CartService is globally accessible and exists
-                // Note: The CartService class is not defined in this file.
-                // It's called here based on the original code logic.
-                // If it doesn't exist, this line will cause a compilation error.
-                CartService.Current.AddOrUpdateItem(_itemName);
+                // 假设 CartService 位于 M4Food.Views 命名空间
+                M4Food.Views.CartService.Current.AddOrUpdateItem(_itemName);
             }
 
             // Provide feedback and navigate back

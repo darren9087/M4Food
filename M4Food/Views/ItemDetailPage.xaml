@@ -70,11 +70,11 @@
                         WidthRequest="300"
                         HorizontalOptions="Center"
                         StrokeThickness="0">
-                    <Label Text="[Image Placeholder]" 
-                           HorizontalOptions="Center" 
-                           VerticalOptions="Center" 
-                           TextColor="{StaticResource SecondaryTextColor}"/>
-                </Border>
+					<Image x:Name="ItemImage"
+                           Aspect="AspectFit"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+				</Border>
 
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Price:" 
