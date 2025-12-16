@@ -86,7 +86,6 @@ public partial class LoginPage : ContentPage
 
     private async void OnLoginClicked(object sender, EventArgs e)
     {
-        // FOR UI TESTING - Skip Firebase validation
         var email = EmailEntry.Text?.Trim();
         var password = PasswordEntry.Text;
 
@@ -102,11 +101,6 @@ public partial class LoginPage : ContentPage
             return;
         }
 
-        // UI TESTING MODE - Direct navigation without Firebase
-        await DisplayAlert("Success", $"Welcome back!", "OK");
-        await Navigation.PushAsync(new MainPage());
-
-        /* UNCOMMENT THIS WHEN READY FOR REAL FIREBASE AUTH
         try
         {
             var user = await _firebaseAuth.SignInWithEmailAndPasswordAsync(email, password);
@@ -116,22 +110,35 @@ public partial class LoginPage : ContentPage
                 await DisplayAlert("Success", $"Welcome back, {user.Email}!", "OK");
                 await Navigation.PushAsync(new MainPage());
             }
+            else
+            {
+                await DisplayAlert("Login Failed", "Login failed. Please try again.", "OK");
+            }
         }
         catch (Exception ex)
         {
             string errorMessage = ex.Message switch
             {
-                var msg when msg.Contains("invalid-email") || msg.Contains("INVALID_EMAIL") => "Invalid email address format.",
-                var msg when msg.Contains("user-disabled") || msg.Contains("USER_DISABLED") => "This account has been disabled.",
-                var msg when msg.Contains("user-not-found") || msg.Contains("USER_NOT_FOUND") => "No account found with this email.",
-                var msg when msg.Contains("wrong-password") || msg.Contains("WRONG_PASSWORD") || msg.Contains("INVALID_PASSWORD") => "Incorrect password.",
-                var msg when msg.Contains("network") || msg.Contains("NETWORK") => "Network error. Please check your internet connection.",
+                var msg when msg.Contains("invalid-email", StringComparison.OrdinalIgnoreCase)
+                            || msg.Contains("INVALID_EMAIL", StringComparison.OrdinalIgnoreCase)
+                    => "Invalid email address format.",
+                var msg when msg.Contains("user-disabled", StringComparison.OrdinalIgnoreCase)
+                            || msg.Contains("USER_DISABLED", StringComparison.OrdinalIgnoreCase)
+                    => "This account has been disabled.",
+                var msg when msg.Contains("user-not-found", StringComparison.OrdinalIgnoreCase)
+                            || msg.Contains("USER_NOT_FOUND", StringComparison.OrdinalIgnoreCase)
+                    => "No account found with this email.",
+                var msg when msg.Contains("wrong-password", StringComparison.OrdinalIgnoreCase)
+                            || msg.Contains("WRONG_PASSWORD", StringComparison.OrdinalIgnoreCase)
+                            || msg.Contains("INVALID_PASSWORD", StringComparison.OrdinalIgnoreCase)
+                    => "Incorrect password.",
+                var msg when msg.Contains("network", StringComparison.OrdinalIgnoreCase)
+                    => "Network error. Please check your internet connection.",
                 _ => $"Login failed: {ex.Message}"
             };
             
             await DisplayAlert("Login Failed", errorMessage, "OK");
         }
-        */
     }
 
     private async void OnForgotPasswordTapped(object sender, EventArgs e)

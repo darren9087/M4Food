@@ -45,34 +45,34 @@ namespace M4Food.Views
                 _ => "A wonderful, freshly baked item waiting for a good home."
             };
 
-            // FIX 1: 图片加载逻辑 (假设 ItemImage 存在于 XAML)
+            // Image loading logic (assumes ItemImage exists in XAML)
             string sanitizedItemName = _itemName.Replace(" ", "").ToLower();
-            // 警告: Image.Source 属性在某些旧平台上不受支持，但功能上是正确的。
+            // Note: Image.Source might not be supported on some legacy platforms, but is functionally correct.
             ItemImage.Source = $"{sanitizedItemName}.png";
         }
 
         private async void OnBackClicked(object sender, EventArgs e)
         {
-            // 警告: Navigation.PopAsync() 在某些旧平台上不受支持，但功能上是正确的。
+            // Note: Navigation.PopAsync() might not be supported on some legacy platforms, but is functionally correct.
             await Navigation.PopAsync();
         }
 
-        // FIX 2: 增加库存限制逻辑和 await Task.CompletedTask
+        // Increase quantity with stock limit and await Task.CompletedTask
         private async void OnQuantityIncreased(object sender, EventArgs e)
         {
             if (_quantity < _availableStock)
             {
                 _quantity++;
-                // 警告: Label.Text 属性在某些旧平台上不受支持，但功能上是正确的。
+                // Note: Label.Text might not be supported on some legacy platforms, but is functionally correct.
                 QuantityLabel.Text = _quantity.ToString();
 
-                // FIX: 增加 await Task.CompletedTask 解决 async warning
+                // Use await Task.CompletedTask to satisfy async signature
                 await Task.CompletedTask;
             }
             else
             {
-                // FIX: 增加库存上限提示
-                // 警告: DisplayAlert 在某些旧平台上不受支持，但功能上是正确的。
+                // Show max stock warning
+                // Note: DisplayAlert might not be supported on some legacy platforms, but is functionally correct.
                 await DisplayAlert("Out of Stock", $"Maximum quantity reached. Current stock: {_availableStock}.", "OK");
             }
         }

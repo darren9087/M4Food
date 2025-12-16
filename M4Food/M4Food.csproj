@@ -29,6 +29,8 @@
 		<AndroidSigningStorePass>m4foodDev123</AndroidSigningStorePass>
 		<AndroidSigningKeyAlias>m4foodteam</AndroidSigningKeyAlias>
 		<AndroidSigningKeyPass>m4foodDev123</AndroidSigningKeyPass>
+		<!-- Allow HTTP (cleartext) calls to local dev API like http://10.0.2.2:5288 -->
+		<AndroidUseCleartextTraffic>true</AndroidUseCleartextTraffic>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -35,6 +35,7 @@ public class LocalCacheService : ILocalCacheService
         await db.CreateTableAsync<StoreEntity>();
         await db.CreateTableAsync<RouteEntity>();
         await db.CreateTableAsync<StoreImageEntity>();
+        await db.CreateTableAsync<UserProfileEntity>();
     }
 
     #region Store Methods
@@ -307,6 +308,66 @@ public class LocalCacheService : ILocalCacheService
         {
             await db.DeleteAsync(image);
         }
+    }
+
+    #endregion
+
+    #region User Profile Methods
+
+    public async Task SaveUserProfileAsync(UserProfileDto profile)
+    {
+        var db = await GetDatabaseAsync();
+        var entity = new UserProfileEntity
+        {
+            Id = profile.Id,
+            FullName = profile.FullName,
+            Email = profile.Email,
+            CountryCode = profile.CountryCode,
+            PhoneNumber = profile.PhoneNumber,
+            Country = profile.Country,
+            Gender = profile.Gender,
+            Address = profile.Address,
+            AvatarUrl = profile.AvatarUrl,
+            AvatarPublicId = profile.AvatarPublicId,
+            CreatedAt = profile.CreatedAt == default ? DateTime.UtcNow : profile.CreatedAt,
+            UpdatedAt = DateTime.UtcNow,
+            LastSyncedAt = profile.LastSyncedAt
+        };
+
+        await db.InsertOrReplaceAsync(entity);
+    }
+
+    public async Task<UserProfileDto?> GetUserProfileAsync(string userId)
+    {
+        var db = await GetDatabaseAsync();
+        var entity = await db.Table<UserProfileEntity>()
+            .FirstOrDefaultAsync(p => p.Id == userId);
+
+        if (entity == null)
+            return null;
+
+        return new UserProfileDto
+        {
+            Id = entity.Id,
+            FullName = entity.FullName,
+            Email = entity.Email,
+            CountryCode = entity.CountryCode,
+            PhoneNumber = entity.PhoneNumber,
+            Country = entity.Country,
+            Gender = entity.Gender,
+            Address = entity.Address,
+            AvatarUrl = entity.AvatarUrl,
+            AvatarPublicId = entity.AvatarPublicId,
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt,
+            LastSyncedAt = entity.LastSyncedAt
+        };
+    }
+
+    public async Task DeleteUserProfileAsync(string userId)
+    {
+        var db = await GetDatabaseAsync();
+        await db.DeleteAsync<UserProfileEntity>(userId);
     }
 
     #endregion

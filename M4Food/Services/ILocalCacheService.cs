@@ -29,5 +29,10 @@ public interface ILocalCacheService
     Task<IEnumerable<StoreImageDto>> GetImagesByStoreIdAsync(string storeId);
     Task DeleteImageAsync(string imageId);
     Task ClearUnusedImagesAsync();
+
+    // User profile related methods
+    Task SaveUserProfileAsync(UserProfileDto profile);
+    Task<UserProfileDto?> GetUserProfileAsync(string userId);
+    Task DeleteUserProfileAsync(string userId);
 }
 

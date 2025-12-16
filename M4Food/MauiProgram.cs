@@ -39,6 +39,9 @@ public static class MauiProgram
         // Register Cloudinary service
         builder.Services.AddSingleton<ICloudinaryService, CloudinaryService>();
         
+        // Register profile service
+        builder.Services.AddSingleton<IProfileService, ProfileService>();
+        
         // Register offline map tile cache service
         builder.Services.AddSingleton<IMapTileCacheService, MapTileCacheService>();
         

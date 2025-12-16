@@ -38,7 +38,8 @@
                 <Border Stroke="Transparent" StrokeShape="RoundRectangle 15" Padding="15,8" BackgroundColor="White">
                     <VerticalStackLayout Spacing="0">
                         <Label Text="Full Name" FontSize="13" TextColor="#666666"/>
-                        <Entry Placeholder="Enter your name" 
+                        <Entry x:Name="FullNameEntry"
+                               Placeholder="Enter your name" 
                                TextColor="#1A1A1A" 
                                FontSize="17" 
                                BackgroundColor="Transparent"/>
@@ -48,7 +49,8 @@
                 <Border Stroke="Transparent" StrokeShape="RoundRectangle 15" Padding="15,8" BackgroundColor="White">
                     <VerticalStackLayout Spacing="0">
                         <Label Text="Email" FontSize="13" TextColor="#666666"/>
-                        <Entry Placeholder="youremail@gmail.com" 
+                        <Entry x:Name="EmailEntry"
+                               Placeholder="youremail@gmail.com" 
                                Keyboard="Email" 
                                TextColor="#1A1A1A" 
                                FontSize="17" 
@@ -81,7 +83,8 @@
 
                         <VerticalStackLayout Grid.Column="2" Spacing="0">
                             <Label Text="Phone number" FontSize="13" TextColor="#666666"/>
-                            <Entry Placeholder="12-345 6789" 
+                            <Entry x:Name="PhoneEntry"
+                                   Placeholder="12-345 6789" 
                                    Keyboard="Telephone" 
                                    TextColor="#1A1A1A" 
                                    FontSize="17" 
@@ -107,7 +110,8 @@
                     <Border Grid.Column="1" Stroke="Transparent" StrokeShape="RoundRectangle 15" Padding="15,8" BackgroundColor="White">
                         <VerticalStackLayout Spacing="0">
                             <Label Text="Gender" FontSize="13" TextColor="#666666"/>
-                            <Picker Title="Select" TextColor="#1A1A1A" FontSize="17" BackgroundColor="Transparent">
+                            <Picker x:Name="GenderPicker"
+                                    Title="Select" TextColor="#1A1A1A" FontSize="17" BackgroundColor="Transparent">
                                 <Picker.ItemsSource>
                                     <x:Array Type="{x:Type x:String}">
                                         <x:String>Male</x:String>
@@ -122,7 +126,8 @@
                 <Border Stroke="Transparent" StrokeShape="RoundRectangle 15" Padding="15,10" BackgroundColor="White">
                     <VerticalStackLayout Spacing="0">
                         <Label Text="Address" FontSize="13" TextColor="#666666"/>
-                        <Editor Placeholder="1, Jalan Universiti, 96000 Sibu" 
+                        <Editor x:Name="AddressEditor"
+                                Placeholder="1, Jalan Universiti, 96000 Sibu" 
                                 TextColor="#1A1A1A" 
                                 FontSize="17" 
                                 AutoSize="TextChanges" 
@@ -134,6 +139,7 @@
 
             <VerticalStackLayout Spacing="15" Margin="0,20,0,20">
                 <Button Text="SUBMIT" 
+                        Clicked="OnSubmitClicked"
                         BackgroundColor="#EBC656" 
                         TextColor="White" 
                         FontAttributes="Bold" 

@@ -197,7 +197,7 @@ namespace M4Food.Views
             await ScrollViewContainer.ScrollToAsync(CategoryResultsSection, ScrollToPosition.Start, true);
         }
 
-        // 3. Food Item Tap Handler (包含导航到 ItemDetailPage 的逻辑)
+        // 3. Food Item Tap Handler (includes navigation to ItemDetailPage)
         private async void OnFoodItemTapped(object sender, EventArgs e)
         {
             if (sender is VisualElement element)
@@ -205,7 +205,7 @@ namespace M4Food.Views
                 await element.ScaleTo(0.95, 100, Easing.CubicOut);
                 await element.ScaleTo(1, 100, Easing.CubicIn);
             }
-            // 不需要 else { await Task.CompletedTask; }，因为最终会到达 Navigation.PushAsync 或 DisplayAlert
+            // No need for an else { await Task.CompletedTask; } because execution will reach Navigation.PushAsync or DisplayAlert.
 
             string itemName = "Selected Item";
             if (e is TappedEventArgs tappedArgs && tappedArgs.Parameter is string param)
@@ -213,9 +213,9 @@ namespace M4Food.Views
                 itemName = param;
             }
 
-            // 导航到 ItemDetailPage
-            // 假设 ItemDetailPage(string) 构造函数存在
-            // 如果 ItemDetailPage 不存在，请取消注释下一行并注释掉 DisplayAlert
+            // Navigate to ItemDetailPage.
+            // Assumes ItemDetailPage(string) constructor exists.
+            // If ItemDetailPage does not exist, uncomment the DisplayAlert line instead.
             await Navigation.PushAsync(new ItemDetailPage(itemName));
             // await DisplayAlert("Product Selected", $"You selected: {itemName}", "OK"); 
         }
@@ -246,17 +246,17 @@ namespace M4Food.Views
             await DisplayAlert("Home", "You are on the Home screen.", "OK");
         }
 
-        // 8. Cart Button (导航到 CartPage)
+        // 8. Cart Button (navigates to CartPage)
         private async void OnCartTapped(object sender, EventArgs e)
         {
             // 假设 CartPage 存在
             await Navigation.PushAsync(new CartPage());
         }
 
-        // 9. Profile Navigation (导航到 ProfilePage)
+        // 9. Profile Navigation (navigates to ProfilePage)
         private async void OnAccountTapped(object sender, EventArgs e)
         {
-            // 假设 ProfilePage 存在
+            // Assumes ProfilePage exists
             await Navigation.PushAsync(new M4Food.Views.ProfilePage());
         }
     }
