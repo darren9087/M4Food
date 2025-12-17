@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+<<<<<<< HEAD
 using Microsoft.Maui.LifecycleEvents;
 using Plugin.Firebase.Auth;
 using M4Food.Services;
@@ -76,3 +77,29 @@ public static class MauiProgram
         return builder;
     }
 }
+=======
+
+namespace M4Food
+{
+    public static class MauiProgram
+    {
+        public static MauiApp CreateMauiApp()
+        {
+            var builder = MauiApp.CreateBuilder();
+            builder
+                .UseMauiApp<App>()
+                .ConfigureFonts(fonts =>
+                {
+                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                    fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                });
+
+#if DEBUG
+    		builder.Logging.AddDebug();
+#endif
+
+            return builder.Build();
+        }
+    }
+}
+>>>>>>> dea21201078653aefee083ed1207fd3082c514ab

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## M4Food
 
 Cross-platform .NET MAUI application for the M4Food team.
@@ -150,3 +151,6 @@ All services are ready for frontend integration. Services can be injected via de
 - Delete `M4Food/bin` and `M4Food/obj`.
 - In Visual Studio run `Clean Solution` → `Rebuild Solution`.
 - If it still fails, reboot or check antivirus/sync tools that may lock the directory.
+=======
+
+>>>>>>> dea21201078653aefee083ed1207fd3082c514ab

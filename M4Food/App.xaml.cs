@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿using Microsoft.Maui.Controls;
 using M4Food.Services;
 using Plugin.Firebase.Auth;
@@ -36,6 +37,20 @@ public partial class App : Application
         {
             // Log error but don't prevent app from starting
             System.Diagnostics.Debug.WriteLine($"Failed to initialize database: {ex.Message}");
+=======
+﻿namespace M4Food
+{
+    public partial class App : Application
+    {
+        public App()
+        {
+            InitializeComponent();
+        }
+
+        protected override Window CreateWindow(IActivationState? activationState)
+        {
+            return new Window(new AppShell());
+>>>>>>> dea21201078653aefee083ed1207fd3082c514ab
         }
     }
 }
