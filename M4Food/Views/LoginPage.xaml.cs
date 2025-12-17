@@ -5,6 +5,13 @@ using Plugin.Firebase.Auth;
 #if ANDROID
 using Plugin.Firebase.Auth.Google;
 #endif
+using Plugin.Firebase.CloudMessaging;
+#if ANDROID
+using Android;
+using Android.OS;
+using Android.Content.PM;
+using AndroidX.Core.App;
+#endif
 
 namespace M4Food.Views;
 
@@ -82,6 +89,53 @@ public partial class LoginPage : ContentPage
             Footer.FadeTo(1, 400, Easing.CubicOut),
             Footer.TranslateTo(0, 0, 400, Easing.CubicOut)
         );
+
+        // Ask for notification permission (Android 13+) then initialize FCM token
+        await RequestNotificationPermissionAsync();
+        await InitFcmTokenAsync();
+    }
+
+    private static Task RequestNotificationPermissionAsync()
+    {
+#if ANDROID
+        try
+        {
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
+            {
+                var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
+                if (activity != null &&
+                    activity.CheckSelfPermission(Manifest.Permission.PostNotifications) != Permission.Granted)
+                {
+                    ActivityCompat.RequestPermissions(
+                        activity,
+                        new[] { Manifest.Permission.PostNotifications },
+                        1001);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Notification permission request failed: {ex.Message}");
+        }
+#endif
+        return Task.CompletedTask;
+    }
+
+    private async Task InitFcmTokenAsync()
+    {
+        try
+        {
+            await CrossFirebaseCloudMessaging.Current.CheckIfValidAsync();
+            var token = await CrossFirebaseCloudMessaging.Current.GetTokenAsync();
+            System.Diagnostics.Debug.WriteLine($"FCM token: {token}");
+
+            // Subscribe to a topic for daily broadcast notifications
+            await CrossFirebaseCloudMessaging.Current.SubscribeToTopicAsync("daily");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to init FCM: {ex.Message}");
+        }
     }
 
     private async void OnLoginClicked(object sender, EventArgs e)
@@ -108,7 +162,14 @@ public partial class LoginPage : ContentPage
             if (user != null)
             {
                 await DisplayAlert("Success", $"Welcome back, {user.Email}!", "OK");
-                await Navigation.PushAsync(new MainPage());
+
+#if ANDROID
+                // Show a simple notification so we can verify notifications work
+                NotificationHelper.ShowNotification("Login successful", "Welcome back to M4Food!");
+#endif
+
+                // Replace root with the main shell so next launch skips login
+                Application.Current.MainPage = new AppShell();
             }
             else
             {
@@ -165,8 +226,8 @@ public partial class LoginPage : ContentPage
             if (user != null)
             {
                 await DisplayAlert("Success", $"Signed in as {user.Email}.", "OK");
-                // Navigate to MainPage
-                await Navigation.PushAsync(new MainPage());
+                // Replace root with the main shell so next launch skips login
+                Application.Current.MainPage = new AppShell();
             }
 #else
             await DisplayAlert(

@@ -41,10 +41,20 @@ namespace M4Food.Views
             }
             else
             {
-                await DisplayAlert("Checkout", $"Total: RM {CartService.Current.GetTotal():F2}. Proceeding to payment...", "OK");
+                var total = CartService.Current.GetTotal();
+                await DisplayAlert("Checkout", $"Total: RM {total:F2}. Proceeding to payment...", "OK");
 
                 // Clear the cart after successful checkout simulation
                 CartService.Current.ClearCart();
+
+#if ANDROID
+                // Show order confirmation notification
+                NotificationHelper.ShowNotification(
+                    "Order Confirmed",
+                    $"Your order of RM {total:F2} has been placed successfully!"
+                );
+#endif
+
                 await Navigation.PopAsync(); // Navigate back after checkout
             }
         }

@@ -67,70 +67,71 @@
                     </Grid>
 
                     <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="15">
-                        <Frame Grid.Row="0" Grid.Column="0" CornerRadius="15" Padding="10" HasShadow="False" BorderColor="Transparent" BackgroundColor="White">
+                        <!-- Your Preferred - static cards with explicit tap handlers -->
+                        <Frame Grid.Row="0" Grid.Column="0" CornerRadius="15" Padding="10" HasShadow="False" BorderColor="Transparent" BackgroundColor="White" MinimumHeightRequest="100" MinimumWidthRequest="100">
                             <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Artisan Bread"/>
+                                <TapGestureRecognizer Tapped="OnPreferredArtisanBreadTapped" NumberOfTapsRequired="1"/>
                             </Frame.GestureRecognizers>
-                            <StackLayout VerticalOptions="Center" Spacing="5">
-                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="50" WidthRequest="50" HasShadow="False" HorizontalOptions="Center" Padding="0">
-                                    <Image Source="artisanbread.png" Aspect="AspectFit" HeightRequest="50" WidthRequest="50"/>
+                            <StackLayout VerticalOptions="Center" Spacing="5" InputTransparent="True">
+                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="50" WidthRequest="50" HasShadow="False" HorizontalOptions="Center" Padding="0" InputTransparent="True">
+                                    <Image Source="artisanbread.png" Aspect="AspectFit" HeightRequest="50" WidthRequest="50" InputTransparent="True"/>
                                 </Frame>
-                                <Label Text="Artisan Bread" FontSize="12" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation"/>
+                                <Label Text="Artisan Bread" FontSize="12" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" InputTransparent="True"/>
                             </StackLayout>
                         </Frame>
-                        <Frame Grid.Row="0" Grid.Column="1" CornerRadius="15" Padding="10" HasShadow="False" BorderColor="Transparent" BackgroundColor="White">
+                        <Frame Grid.Row="0" Grid.Column="1" CornerRadius="15" Padding="10" HasShadow="False" BorderColor="Transparent" BackgroundColor="White" MinimumHeightRequest="100" MinimumWidthRequest="100">
                             <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Butter Croissant"/>
+                                <TapGestureRecognizer Tapped="OnPreferredButterCroissantTapped" NumberOfTapsRequired="1"/>
                             </Frame.GestureRecognizers>
-                            <StackLayout VerticalOptions="Center" Spacing="5">
-                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="50" WidthRequest="50" HasShadow="False" HorizontalOptions="Center" Padding="0">
-                                    <Image Source="buttercroissant.png" Aspect="AspectFit" HeightRequest="50" WidthRequest="50"/>
+                            <StackLayout VerticalOptions="Center" Spacing="5" InputTransparent="True">
+                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="50" WidthRequest="50" HasShadow="False" HorizontalOptions="Center" Padding="0" InputTransparent="True">
+                                    <Image Source="buttercroissant.png" Aspect="AspectFit" HeightRequest="50" WidthRequest="50" InputTransparent="True"/>
                                 </Frame>
-                                <Label Text="Butter Croissant" FontSize="12" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation"/>
+                                <Label Text="Butter Croissant" FontSize="12" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" InputTransparent="True"/>
                             </StackLayout>
                         </Frame>
-                        <Frame Grid.Row="0" Grid.Column="2" CornerRadius="15" Padding="10" HasShadow="False" BorderColor="Transparent" BackgroundColor="White">
+                        <Frame Grid.Row="0" Grid.Column="2" CornerRadius="15" Padding="10" HasShadow="False" BorderColor="Transparent" BackgroundColor="White" MinimumHeightRequest="100" MinimumWidthRequest="100">
                             <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Choco Cake"/>
+                                <TapGestureRecognizer Tapped="OnPreferredChocoCakeTapped" NumberOfTapsRequired="1"/>
                             </Frame.GestureRecognizers>
-                            <StackLayout VerticalOptions="Center" Spacing="5">
-                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="50" WidthRequest="50" HasShadow="False" HorizontalOptions="Center" Padding="0">
-                                    <Image Source="chococake.png" Aspect="AspectFit" HeightRequest="50" WidthRequest="50"/>
+                            <StackLayout VerticalOptions="Center" Spacing="5" InputTransparent="True">
+                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="50" WidthRequest="50" HasShadow="False" HorizontalOptions="Center" Padding="0" InputTransparent="True">
+                                    <Image Source="chococake.png" Aspect="AspectFit" HeightRequest="50" WidthRequest="50" InputTransparent="True"/>
                                 </Frame>
-                                <Label Text="Choco Cake" FontSize="12" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation"/>
+                                <Label Text="Choco Cake" FontSize="12" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" InputTransparent="True"/>
                             </StackLayout>
                         </Frame>
-                        <Frame Grid.Row="1" Grid.Column="0" CornerRadius="15" Padding="10" HasShadow="False" BorderColor="Transparent" BackgroundColor="White">
+                        <Frame Grid.Row="1" Grid.Column="0" CornerRadius="15" Padding="10" HasShadow="False" BorderColor="Transparent" BackgroundColor="White" MinimumHeightRequest="100" MinimumWidthRequest="100">
                             <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Glazed Donut"/>
+                                <TapGestureRecognizer Tapped="OnPreferredGlazedDonutTapped" NumberOfTapsRequired="1"/>
                             </Frame.GestureRecognizers>
-                            <StackLayout VerticalOptions="Center" Spacing="5">
-                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="50" WidthRequest="50" HasShadow="False" HorizontalOptions="Center" Padding="0">
-                                    <Image Source="glazeddonut.png" Aspect="AspectFit" HeightRequest="50" WidthRequest="50"/>
+                            <StackLayout VerticalOptions="Center" Spacing="5" InputTransparent="True">
+                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="50" WidthRequest="50" HasShadow="False" HorizontalOptions="Center" Padding="0" InputTransparent="True">
+                                    <Image Source="glazeddonut.png" Aspect="AspectFit" HeightRequest="50" WidthRequest="50" InputTransparent="True"/>
                                 </Frame>
-                                <Label Text="Glazed Donut" FontSize="12" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation"/>
+                                <Label Text="Glazed Donut" FontSize="12" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" InputTransparent="True"/>
                             </StackLayout>
                         </Frame>
-                        <Frame Grid.Row="1" Grid.Column="1" CornerRadius="15" Padding="10" HasShadow="False" BorderColor="Transparent" BackgroundColor="White">
+                        <Frame Grid.Row="1" Grid.Column="1" CornerRadius="15" Padding="10" HasShadow="False" BorderColor="Transparent" BackgroundColor="White" MinimumHeightRequest="100" MinimumWidthRequest="100">
                             <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Choco Chip"/>
+                                <TapGestureRecognizer Tapped="OnPreferredChocoChipTapped" NumberOfTapsRequired="1"/>
                             </Frame.GestureRecognizers>
-                            <StackLayout VerticalOptions="Center" Spacing="5">
-                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="50" WidthRequest="50" HasShadow="False" HorizontalOptions="Center" Padding="0">
-                                    <Image Source="chocochip.png" Aspect="AspectFit" HeightRequest="50" WidthRequest="50"/>
+                            <StackLayout VerticalOptions="Center" Spacing="5" InputTransparent="True">
+                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="50" WidthRequest="50" HasShadow="False" HorizontalOptions="Center" Padding="0" InputTransparent="True">
+                                    <Image Source="chocochip.png" Aspect="AspectFit" HeightRequest="50" WidthRequest="50" InputTransparent="True"/>
                                 </Frame>
-                                <Label Text="Choco Chip" FontSize="12" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation"/>
+                                <Label Text="Choco Chip" FontSize="12" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" InputTransparent="True"/>
                             </StackLayout>
                         </Frame>
-                        <Frame Grid.Row="1" Grid.Column="2" CornerRadius="15" Padding="10" HasShadow="False" BorderColor="Transparent" BackgroundColor="White">
+                        <Frame Grid.Row="1" Grid.Column="2" CornerRadius="15" Padding="10" HasShadow="False" BorderColor="Transparent" BackgroundColor="White" MinimumHeightRequest="100" MinimumWidthRequest="100">
                             <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnFoodItemTapped" CommandParameter="Blueberry Muffin"/>
+                                <TapGestureRecognizer Tapped="OnPreferredBlueberryMuffinTapped" NumberOfTapsRequired="1"/>
                             </Frame.GestureRecognizers>
-                            <StackLayout VerticalOptions="Center" Spacing="5">
-                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="50" WidthRequest="50" HasShadow="False" HorizontalOptions="Center" Padding="0">
-                                    <Image Source="muffin.png" Aspect="AspectFit" HeightRequest="50" WidthRequest="50"/>
+                            <StackLayout VerticalOptions="Center" Spacing="5" InputTransparent="True">
+                                <Frame BackgroundColor="#EEEEEE" CornerRadius="10" HeightRequest="50" WidthRequest="50" HasShadow="False" HorizontalOptions="Center" Padding="0" InputTransparent="True">
+                                    <Image Source="muffin.png" Aspect="AspectFit" HeightRequest="50" WidthRequest="50" InputTransparent="True"/>
                                 </Frame>
-                                <Label Text="Blueberry Muffin" FontSize="12" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation"/>
+                                <Label Text="Blueberry Muffin" FontSize="12" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" InputTransparent="True"/>
                             </StackLayout>
                         </Frame>
                     </Grid>

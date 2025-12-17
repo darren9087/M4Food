@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.ApplicationModel;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -42,6 +43,29 @@ namespace M4Food.Views
             UpdateCategoryButtonStyle("All");
         }
 
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+
+#if ANDROID
+            // Ensure we have an FCM token even when the app auto-skips the LoginPage
+            try
+            {
+                var cloudMessaging = Plugin.Firebase.CloudMessaging.CrossFirebaseCloudMessaging.Current;
+                await cloudMessaging.CheckIfValidAsync();
+                var token = await cloudMessaging.GetTokenAsync();
+                System.Diagnostics.Debug.WriteLine($"FCM token (MainPage): {token}");
+
+                // Ensure we are subscribed to the daily topic (idempotent)
+                await cloudMessaging.SubscribeToTopicAsync("daily");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to init FCM on MainPage: {ex.Message}");
+            }
+#endif
+        }
+
         // 动态生成产品列表 UI 的方法
         private void PopulateCategoryResults(string category)
         {
@@ -72,9 +96,23 @@ namespace M4Food.Views
             foreach (var product in filteredProducts)
             {
                 // 创建 StackLayout 包含 Image 和 Label
-                var stackLayout = new StackLayout { VerticalOptions = LayoutOptions.Center, Spacing = 5 };
+                var stackLayout = new StackLayout 
+                { 
+                    VerticalOptions = LayoutOptions.Center, 
+                    Spacing = 5,
+                    InputTransparent = true  // 让点击穿透到外层 Frame
+                };
 
-                // Image Frame
+                // Image Frame (MAUI handles image caching automatically)
+                var productImage = new Image 
+                { 
+                    Source = product.ImageSource, 
+                    Aspect = Aspect.AspectFit, 
+                    HeightRequest = 50, 
+                    WidthRequest = 50,
+                    InputTransparent = true  // 让点击穿透
+                };
+
                 var imageFrame = new Frame
                 {
                     BackgroundColor = Color.FromArgb("#EEEEEE"),
@@ -84,7 +122,8 @@ namespace M4Food.Views
                     HasShadow = false,
                     HorizontalOptions = LayoutOptions.Center,
                     Padding = new Thickness(0),
-                    Content = new Image { Source = product.ImageSource, Aspect = Aspect.AspectFit, HeightRequest = 50, WidthRequest = 50 }
+                    InputTransparent = true,  // 让点击穿透
+                    Content = productImage
                 };
                 stackLayout.Children.Add(imageFrame);
 
@@ -96,7 +135,8 @@ namespace M4Food.Views
                     FontAttributes = FontAttributes.Bold,
                     TextColor = Color.FromArgb("#1A1A1A"),
                     HorizontalTextAlignment = TextAlignment.Center,
-                    LineBreakMode = LineBreakMode.TailTruncation
+                    LineBreakMode = LineBreakMode.TailTruncation,
+                    InputTransparent = true  // 让点击穿透
                 };
                 stackLayout.Children.Add(nameLabel);
 
@@ -108,14 +148,25 @@ namespace M4Food.Views
                     HasShadow = false,
                     BorderColor = Colors.Transparent,
                     BackgroundColor = Colors.White,
+                    MinimumHeightRequest = 100,  // 确保有足够的点击区域
+                    MinimumWidthRequest = 100,
                     Content = stackLayout
                 };
 
                 // 添加点击手势 (导航到 ItemDetailPage)
-                var tapGesture = new TapGestureRecognizer();
-                // 使用第二个版本中的 OnFoodItemTapped，它包含了导航逻辑
-                tapGesture.Tapped += (s, args) => OnFoodItemTapped(s, args);
-                tapGesture.CommandParameter = product.Name;
+                // 使用闭包捕获 product.Name，确保参数正确传递
+                string productName = product.Name ?? "Unknown Item";
+                
+                // 创建更可靠的手势识别器
+                var tapGesture = new TapGestureRecognizer
+                {
+                    NumberOfTapsRequired = 1
+                };
+                tapGesture.Tapped += (s, args) => 
+                {
+                    // 立即响应，不等待
+                    _ = NavigateToItemDetail(outerFrame, productName);
+                };
                 outerFrame.GestureRecognizers.Add(tapGesture);
 
                 // 添加到 Grid
@@ -198,26 +249,68 @@ namespace M4Food.Views
         }
 
         // 3. Food Item Tap Handler (includes navigation to ItemDetailPage)
+        // Overload for direct string parameter (used by code-generated items)
+        private async void OnFoodItemTapped(object sender, string itemName)
+        {
+            await NavigateToItemDetail(sender, itemName);
+        }
+
+        // Overload for TappedEventArgs (used by XAML TapGestureRecognizer with CommandParameter)
         private async void OnFoodItemTapped(object sender, EventArgs e)
         {
-            if (sender is VisualElement element)
-            {
-                await element.ScaleTo(0.95, 100, Easing.CubicOut);
-                await element.ScaleTo(1, 100, Easing.CubicIn);
-            }
-            // No need for an else { await Task.CompletedTask; } because execution will reach Navigation.PushAsync or DisplayAlert.
-
             string itemName = "Selected Item";
+            
+            // Try to get parameter from TappedEventArgs
             if (e is TappedEventArgs tappedArgs && tappedArgs.Parameter is string param)
             {
                 itemName = param;
             }
+            // Fallback: try to get from sender's BindingContext or Tag
+            else if (sender is BindableObject bindable && bindable.BindingContext is string contextName)
+            {
+                itemName = contextName;
+            }
 
-            // Navigate to ItemDetailPage.
-            // Assumes ItemDetailPage(string) constructor exists.
-            // If ItemDetailPage does not exist, uncomment the DisplayAlert line instead.
+            await NavigateToItemDetail(sender, itemName);
+        }
+
+        // --- Explicit tap handlers for 'Your Preferred' static cards ---
+        private async void OnPreferredArtisanBreadTapped(object sender, EventArgs e)
+            => await NavigateToItemDetail(sender, "Artisan Bread");
+
+        private async void OnPreferredButterCroissantTapped(object sender, EventArgs e)
+            => await NavigateToItemDetail(sender, "Butter Croissant");
+
+        private async void OnPreferredChocoCakeTapped(object sender, EventArgs e)
+            => await NavigateToItemDetail(sender, "Choco Cake");
+
+        private async void OnPreferredGlazedDonutTapped(object sender, EventArgs e)
+            => await NavigateToItemDetail(sender, "Glazed Donut");
+
+        private async void OnPreferredChocoChipTapped(object sender, EventArgs e)
+            => await NavigateToItemDetail(sender, "Choco Chip");
+
+        private async void OnPreferredBlueberryMuffinTapped(object sender, EventArgs e)
+            => await NavigateToItemDetail(sender, "Blueberry Muffin");
+
+        // Common navigation logic - keep it simple and reliable
+        private async Task NavigateToItemDetail(object sender, string itemName)
+        {
+            // Ensure a safe default name
+            if (string.IsNullOrWhiteSpace(itemName))
+            {
+                itemName = "Selected Item";
+            }
+
+            // Simple tap animation (awaited to stay on main thread)
+            if (sender is VisualElement element)
+            {
+                await element.ScaleTo(0.95, 80, Easing.CubicOut);
+                await element.ScaleTo(1, 80, Easing.CubicIn);
+            }
+
+            // Normal navigation – no extra threading tricks
             await Navigation.PushAsync(new ItemDetailPage(itemName));
-            // await DisplayAlert("Product Selected", $"You selected: {itemName}", "OK"); 
         }
 
         // 4. Free Delivery Promo

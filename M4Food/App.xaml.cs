@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls;
 using M4Food.Services;
+using Plugin.Firebase.Auth;
 
 namespace M4Food;
 
@@ -11,8 +12,16 @@ public partial class App : Application
     {
         InitializeComponent();
         _localCacheService = localCacheService;
-        MainPage = new AppShell();
-        
+
+        // Decide start page based on Firebase auth state
+        var currentUser = CrossFirebaseAuth.Current.CurrentUser;
+
+        // If a user is already authenticated, go directly to the main shell.
+        // Otherwise, show the login page wrapped in a NavigationPage.
+        MainPage = currentUser != null
+            ? new AppShell()
+            : new NavigationPage(new Views.LoginPage());
+
         // Initialize database
         _ = InitializeDatabaseAsync();
     }

@@ -16,39 +16,71 @@ namespace M4Food.Views
         {
             InitializeComponent();
 
-            _itemName = itemName;
-            this.Title = itemName;
+            _itemName = string.IsNullOrWhiteSpace(itemName) ? "Unknown Item" : itemName;
+            this.Title = _itemName;
 
-            // Simulate data loading
+            // Defer heavy operations to OnAppearing to improve initial load performance
+            // Set initial quantity display (with null check)
+            if (QuantityLabel != null)
+            {
+                QuantityLabel.Text = _quantity.ToString();
+            }
+        }
+
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            // Load item details after page appears for better perceived performance
             LoadItemDetails();
-
-            // Set initial quantity display
-            QuantityLabel.Text = _quantity.ToString();
         }
 
         private void LoadItemDetails()
         {
-            // Set item name, price, and stock on the UI elements
-            NameLabel.Text = _itemName;
-            PriceLabel.Text = $"RM {_itemPrice:F2}";
-            StockLabel.Text = $"Stock: {_availableStock} available";
-
-            // Simulate description based on item name
-            DescriptionLabel.Text = _itemName switch
+            try
             {
-                "Artisan Bread" => "Freshly baked artisan bread, perfect for toast and sandwiches.",
-                "Butter Croissant" => "Flaky, buttery croissant, a classic breakfast delight.",
-                "Choco Cake" => "Rich chocolate cake, guaranteed to satisfy your sweet cravings.",
-                "Glazed Donut" => "Classic glazed ring donut, soft and sweet.",
-                "Choco Chip" => "Chewy chocolate chip cookie, a timeless favorite.",
-                "Blueberry Muffin" => "Moist blueberry muffin, baked fresh every morning.",
-                _ => "A wonderful, freshly baked item waiting for a good home."
-            };
+                // Set item name, price, and stock on the UI elements (with null checks)
+                if (NameLabel != null)
+                {
+                    NameLabel.Text = _itemName;
+                }
+                if (PriceLabel != null)
+                {
+                    PriceLabel.Text = $"RM {_itemPrice:F2}";
+                }
+                if (StockLabel != null)
+                {
+                    StockLabel.Text = $"Stock: {_availableStock} available";
+                }
 
-            // Image loading logic (assumes ItemImage exists in XAML)
-            string sanitizedItemName = _itemName.Replace(" ", "").ToLower();
-            // Note: Image.Source might not be supported on some legacy platforms, but is functionally correct.
-            ItemImage.Source = $"{sanitizedItemName}.png";
+                // Simulate description based on item name
+                string description = _itemName switch
+                {
+                    "Artisan Bread" => "Freshly baked artisan bread, perfect for toast and sandwiches.",
+                    "Butter Croissant" => "Flaky, buttery croissant, a classic breakfast delight.",
+                    "Choco Cake" => "Rich chocolate cake, guaranteed to satisfy your sweet cravings.",
+                    "Glazed Donut" => "Classic glazed ring donut, soft and sweet.",
+                    "Choco Chip" => "Chewy chocolate chip cookie, a timeless favorite.",
+                    "Blueberry Muffin" => "Moist blueberry muffin, baked fresh every morning.",
+                    _ => "A wonderful, freshly baked item waiting for a good home."
+                };
+
+                if (DescriptionLabel != null)
+                {
+                    DescriptionLabel.Text = description;
+                }
+
+                // Image loading logic (assumes ItemImage exists in XAML)
+                if (ItemImage != null)
+                {
+                    string sanitizedItemName = _itemName?.Replace(" ", "").ToLower() ?? "unknown";
+                    ItemImage.Source = $"{sanitizedItemName}.png";
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading item details: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
         }
 
         private async void OnBackClicked(object sender, EventArgs e)
