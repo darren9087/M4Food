@@ -1,0 +1,56 @@
+{
+  "project_info": {
+    "project_number": "709248664211",
+    "firebase_url": "https://m4food-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "m4food",
+    "storage_bucket": "m4food.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:709248664211:android:ffea064353f5f0fdcac366",
+        "android_client_info": {
+          "package_name": "com.companyname.m4food"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "709248664211-4jbklchbeq2chhh0n8peu93el3qdjcb1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.companyname.m4food",
+            "certificate_hash": "b78fc89da6cdb4f15f70cd0dc51576408ddacfe4"
+          }
+        },
+        {
+          "client_id": "709248664211-5kmcao35ibcr8gu4tdt8dusbcgm0haas.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.companyname.m4food",
+            "certificate_hash": "8576277cab93d12b20fd8edb8cfa53eb2210ee8a"
+          }
+        },
+        {
+          "client_id": "709248664211-g56fijcsvdumvnaa15ajvgot34g5fp6t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIN9r1bqrq_sQgU1OvVUpKC5CEAL1qMNo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "709248664211-g56fijcsvdumvnaa15ajvgot34g5fp6t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

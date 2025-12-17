@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<!-- Crashlytics requires a unique build id string resource. -->
+	<string name="com.crashlytics.android.build_id">9f8f13c4-1d8d-4c16-92bd-5cb50f35e7d8</string>
+</resources>
+
