@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -25,6 +26,8 @@ namespace M4Food.Views
                     _quantity = value;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(TotalPrice)); // Notify that TotalPrice has changed
+                    // Notify CartService that quantity changed
+                    CartService.Current.NotifyCartChanged();
                 }
             }
         }
@@ -50,11 +53,22 @@ namespace M4Food.Views
         // Public static accessor to get the unique instance (Lazy initialization)
         public static CartService Current => _instance ??= new CartService();
 
+        // Event to notify when cart content changes
+        public event EventHandler? CartChanged;
+
         // Must be public to avoid XAML runtime errors when binding
-        public CartService() { }
+        public CartService() 
+        {
+            Items.CollectionChanged += (s, e) => NotifyCartChanged();
+        }
 
         // ObservableCollection ensures UI updates when items are added or removed
         public ObservableCollection<CartItem> Items { get; } = new ObservableCollection<CartItem>();
+
+        /// <summary>
+        /// Total number of items in the cart (sum of all quantities)
+        /// </summary>
+        public int TotalItemCount => Items.Sum(i => i.Quantity);
 
         public void AddOrUpdateItem(string itemName)
         {
@@ -83,6 +97,45 @@ namespace M4Food.Views
         {
             // Remove all items from the cart
             Items.Clear();
+        }
+
+        /// <summary>
+        /// Remove a specific item from the cart
+        /// </summary>
+        public void RemoveItem(string itemName)
+        {
+            var item = Items.FirstOrDefault(i => i.Name == itemName);
+            if (item != null)
+            {
+                Items.Remove(item);
+            }
+        }
+
+        /// <summary>
+        /// Decrease quantity of an item, remove if quantity becomes 0
+        /// </summary>
+        public void DecreaseQuantity(string itemName)
+        {
+            var item = Items.FirstOrDefault(i => i.Name == itemName);
+            if (item != null)
+            {
+                if (item.Quantity > 1)
+                {
+                    item.Quantity--;
+                }
+                else
+                {
+                    Items.Remove(item);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Notify subscribers that the cart has changed
+        /// </summary>
+        public void NotifyCartChanged()
+        {
+            CartChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }

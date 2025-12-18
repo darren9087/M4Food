@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Networking;
 
 namespace M4Food.Views
 {
@@ -22,6 +23,15 @@ namespace M4Food.Views
             {
                 QuantityLabel.Text = _quantity.ToString();
             }
+        }
+
+        /// <summary>
+        /// Check if the device has internet connection
+        /// </summary>
+        private bool IsConnected()
+        {
+            var networkAccess = Connectivity.Current.NetworkAccess;
+            return networkAccess == NetworkAccess.Internet;
         }
 
         protected override void OnAppearing()
@@ -107,6 +117,16 @@ namespace M4Food.Views
 
         private async void OnAddToCartClicked(object sender, EventArgs e)
         {
+            // Check if device is online
+            if (!IsConnected())
+            {
+                await DisplayAlert(
+                    "Offline", 
+                    "You are currently offline. Please connect to the internet to add items to your cart.", 
+                    "OK");
+                return;
+            }
+
             for (int i = 0; i < _quantity; i++)
             {
                 M4Food.Views.CartService.Current.AddOrUpdateItem(_itemName);

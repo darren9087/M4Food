@@ -187,13 +187,38 @@
                     <Label Text="🏠" FontSize="24" HorizontalOptions="Center" TextColor="#333333"/>
                     <Label Text="HOME" FontSize="10" FontAttributes="Bold" TextColor="#333333" HorizontalTextAlignment="Center"/>
                 </StackLayout>
-                <StackLayout Grid.Column="1" Spacing="2" HorizontalOptions="Center">
-                    <StackLayout.GestureRecognizers>
+                <Grid Grid.Column="1" HorizontalOptions="Center" RowDefinitions="Auto,Auto" RowSpacing="2">
+                    <Grid.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnCartTapped"/>
-                    </StackLayout.GestureRecognizers>
-                    <Label Text="🛒" FontSize="24" HorizontalOptions="Center" TextColor="#333333"/>
-                    <Label Text="CART" FontSize="10" FontAttributes="Bold" TextColor="#333333" HorizontalTextAlignment="Center"/>
-                </StackLayout>
+                    </Grid.GestureRecognizers>
+                    <!-- Cart icon with badge - larger container to prevent clipping -->
+                    <Grid Grid.Row="0" HorizontalOptions="Center" WidthRequest="45" HeightRequest="35">
+                        <Label Text="🛒" FontSize="24" HorizontalOptions="Center" VerticalOptions="Center" TextColor="#333333"/>
+                        <!-- Red circular badge -->
+                        <Border x:Name="CartBadge"
+                                BackgroundColor="#FF4B4B"
+                                Stroke="Transparent"
+                                StrokeThickness="0"
+                                WidthRequest="20"
+                                HeightRequest="20"
+                                HorizontalOptions="End"
+                                VerticalOptions="Start"
+                                Margin="0,2,2,0"
+                                IsVisible="False">
+                            <Border.StrokeShape>
+                                <Ellipse/>
+                            </Border.StrokeShape>
+                            <Label x:Name="CartBadgeLabel"
+                                   Text="0"
+                                   FontSize="11"
+                                   FontAttributes="Bold"
+                                   TextColor="White"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
+                    </Grid>
+                    <Label Grid.Row="1" Text="CART" FontSize="10" FontAttributes="Bold" TextColor="#333333" HorizontalTextAlignment="Center"/>
+                </Grid>
                 <StackLayout Grid.Column="2" Spacing="2" HorizontalOptions="Center">
                     <StackLayout.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnOrdersTapped"/>

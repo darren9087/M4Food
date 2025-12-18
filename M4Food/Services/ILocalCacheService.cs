@@ -34,5 +34,15 @@ public interface ILocalCacheService
     Task SaveUserProfileAsync(UserProfileDto profile);
     Task<UserProfileDto?> GetUserProfileAsync(string userId);
     Task DeleteUserProfileAsync(string userId);
+
+    // Order related methods for offline access
+    Task SaveOrderAsync(string userId, OrderCacheDto order);
+    Task SaveOrdersAsync(string userId, IEnumerable<OrderCacheDto> orders);
+    Task<OrderCacheDto?> GetOrderAsync(string orderId);
+    Task<IEnumerable<OrderCacheDto>> GetOrdersByUserAsync(string userId);
+    Task UpdateOrderStatusAsync(string orderId, string newStatus);
+    Task DeleteOrderAsync(string orderId);
+    Task<IEnumerable<OrderCacheDto>> GetUnsyncedOrdersAsync(string userId);
+    Task MarkOrderSyncedAsync(string orderId);
 }
 

@@ -1,4 +1,5 @@
 using SQLite;
+using System.Text.Json;
 using M4Food.Models.DTOs;
 using M4Food.Models.Entities;
 
@@ -36,6 +37,7 @@ public class LocalCacheService : ILocalCacheService
         await db.CreateTableAsync<RouteEntity>();
         await db.CreateTableAsync<StoreImageEntity>();
         await db.CreateTableAsync<UserProfileEntity>();
+        await db.CreateTableAsync<OrderEntity>();
     }
 
     #region Store Methods
@@ -368,6 +370,140 @@ public class LocalCacheService : ILocalCacheService
     {
         var db = await GetDatabaseAsync();
         await db.DeleteAsync<UserProfileEntity>(userId);
+    }
+
+    #endregion
+
+    #region Order Methods
+
+    public async Task SaveOrderAsync(string userId, OrderCacheDto order)
+    {
+        var db = await GetDatabaseAsync();
+        var entity = new OrderEntity
+        {
+            OrderId = order.OrderId,
+            UserId = userId,
+            OrderDate = order.OrderDate,
+            Status = order.Status,
+            TotalPrice = order.TotalPrice,
+            ItemsJson = JsonSerializer.Serialize(order.Items),
+            CreatedAt = order.CreatedAt == default ? DateTime.UtcNow : order.CreatedAt,
+            UpdatedAt = DateTime.UtcNow,
+            LastSyncedAt = order.LastSyncedAt,
+            NeedsSync = order.NeedsSync
+        };
+
+        await db.InsertOrReplaceAsync(entity);
+    }
+
+    public async Task SaveOrdersAsync(string userId, IEnumerable<OrderCacheDto> orders)
+    {
+        var db = await GetDatabaseAsync();
+        foreach (var order in orders)
+        {
+            await SaveOrderAsync(userId, order);
+        }
+    }
+
+    public async Task<OrderCacheDto?> GetOrderAsync(string orderId)
+    {
+        var db = await GetDatabaseAsync();
+        var entity = await db.Table<OrderEntity>()
+            .FirstOrDefaultAsync(o => o.OrderId == orderId);
+
+        if (entity == null)
+            return null;
+
+        return MapToOrderCacheDto(entity);
+    }
+
+    public async Task<IEnumerable<OrderCacheDto>> GetOrdersByUserAsync(string userId)
+    {
+        var db = await GetDatabaseAsync();
+        var entities = await db.Table<OrderEntity>()
+            .Where(o => o.UserId == userId)
+            .OrderByDescending(o => o.OrderDate)
+            .ToListAsync();
+
+        return entities.Select(MapToOrderCacheDto);
+    }
+
+    public async Task UpdateOrderStatusAsync(string orderId, string newStatus)
+    {
+        var db = await GetDatabaseAsync();
+        var entity = await db.Table<OrderEntity>()
+            .FirstOrDefaultAsync(o => o.OrderId == orderId);
+
+        if (entity != null)
+        {
+            entity.Status = newStatus;
+            entity.UpdatedAt = DateTime.UtcNow;
+            entity.NeedsSync = true; // Mark as needing sync
+            await db.UpdateAsync(entity);
+        }
+    }
+
+    public async Task DeleteOrderAsync(string orderId)
+    {
+        var db = await GetDatabaseAsync();
+        var entity = await db.Table<OrderEntity>()
+            .FirstOrDefaultAsync(o => o.OrderId == orderId);
+        
+        if (entity != null)
+            await db.DeleteAsync(entity);
+    }
+
+    public async Task<IEnumerable<OrderCacheDto>> GetUnsyncedOrdersAsync(string userId)
+    {
+        var db = await GetDatabaseAsync();
+        var entities = await db.Table<OrderEntity>()
+            .Where(o => o.UserId == userId && o.NeedsSync)
+            .ToListAsync();
+
+        return entities.Select(MapToOrderCacheDto);
+    }
+
+    public async Task MarkOrderSyncedAsync(string orderId)
+    {
+        var db = await GetDatabaseAsync();
+        var entity = await db.Table<OrderEntity>()
+            .FirstOrDefaultAsync(o => o.OrderId == orderId);
+
+        if (entity != null)
+        {
+            entity.NeedsSync = false;
+            entity.LastSyncedAt = DateTime.UtcNow;
+            await db.UpdateAsync(entity);
+        }
+    }
+
+    private static OrderCacheDto MapToOrderCacheDto(OrderEntity entity)
+    {
+        var items = new List<OrderItemCacheDto>();
+        if (!string.IsNullOrEmpty(entity.ItemsJson))
+        {
+            try
+            {
+                items = JsonSerializer.Deserialize<List<OrderItemCacheDto>>(entity.ItemsJson) ?? new();
+            }
+            catch
+            {
+                // If deserialization fails, use empty list
+            }
+        }
+
+        return new OrderCacheDto
+        {
+            OrderId = entity.OrderId,
+            OrderDate = entity.OrderDate,
+            Status = entity.Status,
+            TotalPrice = entity.TotalPrice,
+            Items = items,
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt,
+            LastSyncedAt = entity.LastSyncedAt,
+            NeedsSync = entity.NeedsSync
+        };
     }
 
     #endregion

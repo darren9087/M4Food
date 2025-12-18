@@ -7,7 +7,8 @@
              BackgroundColor="#FDF8E5">
 
     <Grid RowDefinitions="Auto, *" Padding="20" RowSpacing="0">
-        <Grid Grid.Row="0" ColumnDefinitions="Auto, *" Padding="0,10,0,10">
+        <!-- Header -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto, *, Auto" Padding="0,10,0,10">
             <Button Grid.Column="0"
                     Text="&lt;"
                     Clicked="OnBackClicked"
@@ -22,16 +23,16 @@
                     VerticalOptions="Center"/>
 
             <Label Grid.Column="1" 
-                   Text="" 
+                   Text="My Orders" 
                    FontSize="24" 
                    FontAttributes="Bold" 
                    TextColor="#333333"
                    VerticalOptions="Center"
-                   HorizontalOptions="Center"
-                   Margin="-50,0,0,0"/>
+                   HorizontalOptions="Center"/>
         </Grid>
 
         <VerticalStackLayout Grid.Row="1" Spacing="20">
+            <!-- Tab Selector -->
             <Frame BackgroundColor="White" 
                    CornerRadius="15" 
                    Padding="10"
@@ -80,6 +81,16 @@
                 </Grid>
             </Frame>
 
+            <!-- Loading Indicator -->
+            <ActivityIndicator x:Name="LoadingIndicator"
+                               IsRunning="False"
+                               IsVisible="False"
+                               Color="#E8C547"
+                               HeightRequest="40"
+                               VerticalOptions="Center"
+                               HorizontalOptions="Center"/>
+
+            <!-- Orders List -->
             <CollectionView x:Name="OrdersCollectionView"
                             Margin="0,10,0,0">
                 <CollectionView.ItemTemplate>
@@ -91,10 +102,11 @@
                                HasShadow="False"
                                BorderColor="#EEEEEE">
                             <Grid ColumnDefinitions="*, Auto" 
-                                  RowDefinitions="Auto, Auto, Auto, Auto"
+                                  RowDefinitions="Auto, Auto, Auto, Auto, Auto"
                                   RowSpacing="5">
-                                <StackLayout Grid.Column="0" Grid.Row="0" Orientation="Horizontal" Spacing="10" IsVisible="False">
-                                    <Label Text=""
+                                <!-- Order ID and Status -->
+                                <StackLayout Grid.Column="0" Grid.Row="0" Orientation="Horizontal" Spacing="10">
+                                    <Label Text="📦"
                                            FontSize="14"
                                            TextColor="#666666"/>
                                     <Label Text="{Binding OrderId}"
@@ -104,37 +116,66 @@
                                 </StackLayout>
 
                                 <Label Grid.Column="1" Grid.Row="0"
-                                       Text=""
+                                       Text="{Binding Status}"
                                        FontSize="14"
                                        FontAttributes="Bold"
                                        HorizontalOptions="End"
-                                       TextColor="{Binding StatusColor}"
-                                       IsVisible="False"/>
+                                       TextColor="{Binding StatusColor}"/>
 
+                                <!-- Order Date -->
                                 <Label Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1"
-                                       Text="{Binding OrderDate, StringFormat='{0:dd MMM yyyy}'}"
+                                       Text="{Binding OrderDate, StringFormat='{0:dd MMM yyyy, hh:mm tt}'}"
                                        FontSize="13"
                                        TextColor="#666666"
-                                       Margin="0,5,0,0"
-                                       IsVisible="False"/>
+                                       Margin="0,5,0,0"/>
 
+                                <!-- Items Summary -->
                                 <Label Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2"
-                                       Text=""
+                                       Text="{Binding ItemsSummary}"
                                        FontSize="13"
                                        TextColor="#1A1A1A"
                                        LineBreakMode="TailTruncation"
-                                       Margin="0,2,0,0"
-                                       IsVisible="False"/>
+                                       Margin="0,2,0,0"/>
 
+                                <!-- Total Price -->
                                 <Label Grid.Column="1" Grid.Row="3"
-                                       Text="{Binding TotalPrice, StringFormat='{0:F2}'}"
+                                       Text="{Binding TotalPrice, StringFormat='RM {0:F2}'}"
                                        FontSize="16"
                                        FontAttributes="Bold"
                                        TextColor="#E8C547"
                                        VerticalOptions="End"
                                        HorizontalOptions="End"
-                                       Margin="0,5,0,0"
-                                       IsVisible="False"/>
+                                       Margin="0,5,0,0"/>
+
+                                <!-- Action Buttons (only for active orders) -->
+                                <StackLayout Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="4"
+                                             Orientation="Horizontal"
+                                             Spacing="10"
+                                             Margin="0,10,0,0"
+                                             IsVisible="{Binding IsActive}">
+                                    <Button Text="✓ Confirm Received"
+                                            BackgroundColor="#4CAF50"
+                                            TextColor="White"
+                                            FontSize="13"
+                                            FontAttributes="Bold"
+                                            CornerRadius="20"
+                                            HeightRequest="40"
+                                            Padding="15,0"
+                                            HorizontalOptions="Start"
+                                            Clicked="OnConfirmReceivedClicked"
+                                            CommandParameter="{Binding OrderId}"/>
+                                    <Button Text="✕ Cancel"
+                                            BackgroundColor="#FF4B4B"
+                                            TextColor="White"
+                                            FontSize="13"
+                                            FontAttributes="Bold"
+                                            CornerRadius="20"
+                                            HeightRequest="40"
+                                            Padding="15,0"
+                                            HorizontalOptions="Start"
+                                            Clicked="OnCancelOrderClicked"
+                                            CommandParameter="{Binding OrderId}"/>
+                                </StackLayout>
                             </Grid>
                         </Frame>
                     </DataTemplate>

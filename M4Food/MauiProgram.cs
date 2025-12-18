@@ -48,6 +48,9 @@ public static class MauiProgram
         // Register offline route service
         builder.Services.AddSingleton<IOfflineRouteService, OfflineRouteService>();
         
+        // Register order service for Firebase order management
+        builder.Services.AddSingleton<IOrderService, OrderService>();
+        
         return builder;
     }
 

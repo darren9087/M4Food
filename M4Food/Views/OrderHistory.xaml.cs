@@ -5,6 +5,10 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using M4Food.Services;
+#if ANDROID
+using M4Food;
+#endif
 
 namespace M4Food.Views
 {
@@ -12,80 +16,69 @@ namespace M4Food.Views
     {
         private bool _showActiveOrders = true;
         private List<Order> _allOrders = new List<Order>();
+        private readonly IOrderService _orderService;
 
         public OrdersPage()
         {
             InitializeComponent();
-            LoadSampleOrders();
-            ShowActiveOrders();
+
+            // Get OrderService from DI
+            _orderService = Application.Current?
+                .Handler?
+                .MauiContext?
+                .Services
+                .GetService(typeof(IOrderService)) as IOrderService
+                ?? throw new InvalidOperationException("IOrderService not registered.");
         }
 
-        private void LoadSampleOrders()
+        protected override async void OnAppearing()
         {
-            _allOrders = new List<Order>
-            {
-                new Order
-                {
-                    OrderId = "ORD001",
-                    OrderDate = DateTime.Now.AddHours(-2),
-                    Status = "Processing",
-                    Items = new ObservableCollection<OrderItem>
-                    {
-                        new OrderItem { Name = "Artisan Bread", Quantity = 2, Price = 3.50 },
-                        new OrderItem { Name = "Butter Croissant", Quantity = 1, Price = 2.80 }
-                    }
-                },
-                new Order
-                {
-                    OrderId = "ORD002",
-                    OrderDate = DateTime.Now.AddDays(-1),
-                    Status = "Processing",
-                    Items = new ObservableCollection<OrderItem>
-                    {
-                        new OrderItem { Name = "Choco Cake", Quantity = 1, Price = 12.90 }
-                    }
-                },
-                new Order
-                {
-                    OrderId = "ORD003",
-                    OrderDate = DateTime.Now.AddDays(-3),
-                    Status = "Delivered",
-                    Items = new ObservableCollection<OrderItem>
-                    {
-                        new OrderItem { Name = "Glazed Donut", Quantity = 3, Price = 2.50 },
-                        new OrderItem { Name = "Blueberry Muffin", Quantity = 2, Price = 3.20 }
-                    }
-                },
-                new Order
-                {
-                    OrderId = "ORD004",
-                    OrderDate = DateTime.Now.AddDays(-7),
-                    Status = "Cancelled",
-                    Items = new ObservableCollection<OrderItem>
-                    {
-                        new OrderItem { Name = "Choco Chip", Quantity = 4, Price = 1.80 }
-                    }
-                },
-                new Order
-                {
-                    OrderId = "ORD005",
-                    OrderDate = DateTime.Now.AddDays(-10),
-                    Status = "Delivered",
-                    Items = new ObservableCollection<OrderItem>
-                    {
-                        new OrderItem { Name = "Artisan Bread", Quantity = 1, Price = 3.50 },
-                        new OrderItem { Name = "Butter Croissant", Quantity = 2, Price = 2.80 },
-                        new OrderItem { Name = "Choco Cake", Quantity = 1, Price = 12.90 }
-                    }
-                }
-            };
+            base.OnAppearing();
+            await LoadOrdersAsync();
+        }
 
-            foreach (var order in _allOrders)
+        private async Task LoadOrdersAsync()
+        {
+            try
             {
-                order.TotalPrice = order.Items.Sum(item => item.Quantity * item.Price);
+                // Show loading indicator
+                LoadingIndicator.IsVisible = true;
+                LoadingIndicator.IsRunning = true;
+                OrdersCollectionView.IsVisible = false;
+
+                // Load orders from Firebase
+                _allOrders = await _orderService.GetOrdersAsync();
+
+                System.Diagnostics.Debug.WriteLine($"Loaded {_allOrders.Count} orders");
+
+                // Refresh the current view
+                if (_showActiveOrders)
+                {
+                    ShowActiveOrders();
+                }
+                else
+                {
+                    ShowPastOrders();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading orders: {ex.Message}");
+                await DisplayAlert("Error", "Failed to load orders. Please try again.", "OK");
+            }
+            finally
+            {
+                // Hide loading indicator
+                LoadingIndicator.IsVisible = false;
+                LoadingIndicator.IsRunning = false;
+                OrdersCollectionView.IsVisible = true;
             }
         }
 
+        /// <summary>
+        /// Called from CartPage after a new order is placed.
+        /// Adds the order to the local list and refreshes the view.
+        /// </summary>
         public void AddNewOrder(Order newOrder)
         {
             newOrder.TotalPrice = newOrder.Items.Sum(item => item.Quantity * item.Price);
@@ -111,14 +104,14 @@ namespace M4Food.Views
             PastOrdersLabel.TextColor = Color.FromArgb("#999999");
 
             var activeOrders = _allOrders
-                .Where(o => o.Status == "Processing")
+                .Where(o => o.Status == "Processing" || o.Status == "Pending")
                 .OrderByDescending(o => o.OrderDate)
                 .ToList();
 
             if (activeOrders.Count == 0)
             {
                 OrdersCollectionView.ItemsSource = new List<Order>();
-                ShowEmptyState("No Order Found");
+                ShowEmptyState("No Active Orders");
             }
             else
             {
@@ -137,14 +130,14 @@ namespace M4Food.Views
             PastOrdersLabel.TextColor = Color.FromArgb("#1A1A1A");
 
             var pastOrders = _allOrders
-                .Where(o => o.Status == "Delivered" || o.Status == "Cancelled")
+                .Where(o => o.Status == "Delivered" || o.Status == "Cancelled" || o.Status == "Completed")
                 .OrderByDescending(o => o.OrderDate)
                 .ToList();
 
             if (pastOrders.Count == 0)
             {
                 OrdersCollectionView.ItemsSource = new List<Order>();
-                ShowEmptyState("No Order Found");
+                ShowEmptyState("No Past Orders");
             }
             else
             {
@@ -180,6 +173,13 @@ namespace M4Food.Views
                 HorizontalOptions = LayoutOptions.Center
             });
 
+            emptyView.Children.Add(new Label
+            {
+                Text = "Your orders will appear here",
+                FontSize = 14,
+                TextColor = Color.FromArgb("#BBBBBB"),
+                HorizontalOptions = LayoutOptions.Center
+            });
 
             OrdersCollectionView.EmptyView = emptyView;
         }
@@ -198,6 +198,99 @@ namespace M4Food.Views
         {
             await Navigation.PopAsync();
         }
+
+        private async void OnConfirmReceivedClicked(object sender, EventArgs e)
+        {
+            if (sender is Button button && button.CommandParameter is string orderId)
+            {
+                var confirm = await DisplayAlert(
+                    "Confirm Received",
+                    "Have you received your order?",
+                    "Yes, Received",
+                    "Cancel");
+
+                if (!confirm) return;
+
+                try
+                {
+                    var success = await _orderService.UpdateOrderStatusAsync(orderId, "Completed");
+                    
+                    if (success)
+                    {
+                        // Update local list
+                        var order = _allOrders.FirstOrDefault(o => o.OrderId == orderId);
+                        if (order != null)
+                        {
+                            order.Status = "Completed";
+                        }
+
+                        await DisplayAlert("Success", "Order marked as completed!", "OK");
+                        
+                        // Refresh the view
+                        ShowActiveOrders();
+
+#if ANDROID
+                        NotificationHelper.ShowNotification(
+                            "Order Completed",
+                            $"Thank you! Order #{orderId} has been completed."
+                        );
+#endif
+                    }
+                    else
+                    {
+                        await DisplayAlert("Error", "Failed to update order status.", "OK");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error confirming order: {ex.Message}");
+                    await DisplayAlert("Error", "Failed to update order. Please try again.", "OK");
+                }
+            }
+        }
+
+        private async void OnCancelOrderClicked(object sender, EventArgs e)
+        {
+            if (sender is Button button && button.CommandParameter is string orderId)
+            {
+                var confirm = await DisplayAlert(
+                    "Cancel Order",
+                    "Are you sure you want to cancel this order?",
+                    "Yes, Cancel",
+                    "No");
+
+                if (!confirm) return;
+
+                try
+                {
+                    var success = await _orderService.CancelOrderAsync(orderId);
+                    
+                    if (success)
+                    {
+                        // Update local list
+                        var order = _allOrders.FirstOrDefault(o => o.OrderId == orderId);
+                        if (order != null)
+                        {
+                            order.Status = "Cancelled";
+                        }
+
+                        await DisplayAlert("Cancelled", "Order has been cancelled.", "OK");
+                        
+                        // Refresh the view
+                        ShowActiveOrders();
+                    }
+                    else
+                    {
+                        await DisplayAlert("Error", "Failed to cancel order.", "OK");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error cancelling order: {ex.Message}");
+                    await DisplayAlert("Error", "Failed to cancel order. Please try again.", "OK");
+                }
+            }
+        }
     }
 
     public class OrderItem
@@ -215,14 +308,19 @@ namespace M4Food.Views
         public ObservableCollection<OrderItem> Items { get; set; } = new ObservableCollection<OrderItem>();
         public double TotalPrice { get; set; }
 
+        /// <summary>
+        /// Returns true if the order is still active (can be confirmed or cancelled)
+        /// </summary>
+        public bool IsActive => Status == "Processing" || Status == "Pending";
+
         public Color StatusColor
         {
             get
             {
                 return Status switch
                 {
-                    "Processing" => Color.FromArgb("#FFA500"),
-                    "Delivered" => Color.FromArgb("#4CAF50"),
+                    "Processing" or "Pending" => Color.FromArgb("#FFA500"),
+                    "Delivered" or "Completed" => Color.FromArgb("#4CAF50"),
                     "Cancelled" => Color.FromArgb("#FF4B4B"),
                     _ => Color.FromArgb("#666666")
                 };

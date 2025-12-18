@@ -83,46 +83,67 @@ public partial class ProfilePage : ContentPage
 
     private async Task LoadProfileAsync()
     {
+        var firebaseAuth = CrossFirebaseAuth.Current;
+        var firebaseUser = firebaseAuth.CurrentUser;
+        if (firebaseUser == null)
+        {
+            return;
+        }
+
+        // 1. Load from local cache FIRST (works offline, instant)
         try
         {
-            var firebaseAuth = CrossFirebaseAuth.Current;
-            var firebaseUser = firebaseAuth.CurrentUser;
-            if (firebaseUser == null)
-            {
-                return;
-            }
-
-            var tokenResult = await firebaseUser.GetIdTokenResultAsync(false);
-            var idToken = tokenResult.Token;
-            if (string.IsNullOrWhiteSpace(idToken))
-            {
-                return;
-            }
-
-            // First try to load from local cache
             var localProfile = await _profileService.GetUserProfileAsync(firebaseUser.Uid);
             if (localProfile != null)
             {
                 ApplyProfileToUi(localProfile);
+                System.Diagnostics.Debug.WriteLine("Profile loaded from local cache");
             }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading local profile: {ex.Message}");
+        }
 
-            // Then try to sync from Firebase Realtime Database (cloud profile)
-            var url = $"users/{firebaseUser.Uid}.json?auth={idToken}";
+        // 2. Try to sync from Firebase in background (don't block if offline)
+        _ = SyncProfileFromFirebaseAsync(firebaseUser.Uid);
+    }
+
+    /// <summary>
+    /// Background sync: fetches profile from Firebase and updates UI/cache
+    /// </summary>
+    private async Task SyncProfileFromFirebaseAsync(string userId)
+    {
+        try
+        {
+            var firebaseUser = CrossFirebaseAuth.Current.CurrentUser;
+            if (firebaseUser == null) return;
+
+            var tokenResult = await firebaseUser.GetIdTokenResultAsync(false);
+            var idToken = tokenResult.Token;
+            if (string.IsNullOrWhiteSpace(idToken)) return;
+
+            var url = $"users/{userId}.json?auth={idToken}";
             var response = await _httpClient.GetAsync(url);
+            
             if (response.IsSuccessStatusCode)
             {
                 var remoteProfile = await response.Content.ReadFromJsonAsync<UserProfileDto>();
                 if (remoteProfile != null)
                 {
-                    ApplyProfileToUi(remoteProfile);
-                    // keep local cache in sync
+                    // Update UI on main thread
+                    await MainThread.InvokeOnMainThreadAsync(() => ApplyProfileToUi(remoteProfile));
+                    
+                    // Update local cache
                     await _profileService.SaveUserProfileAsync(remoteProfile);
+                    System.Diagnostics.Debug.WriteLine("Profile synced from Firebase");
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore errors on initial load; user can still edit and save
+            // Offline or network error - that's OK, we already have local data
+            System.Diagnostics.Debug.WriteLine($"Profile sync from Firebase failed (offline?): {ex.Message}");
         }
     }
 
@@ -199,14 +220,6 @@ public partial class ProfilePage : ContentPage
                 return;
             }
 
-            var tokenResult = await firebaseUser.GetIdTokenResultAsync(false);
-            var idToken = tokenResult.Token;
-            if (string.IsNullOrWhiteSpace(idToken))
-            {
-                await DisplayAlert("Error", "Failed to get ID token.", "OK");
-                return;
-            }
-
             var profile = new UserProfileDto
             {
                 Id = firebaseUser.Uid,
@@ -225,31 +238,56 @@ public partial class ProfilePage : ContentPage
                 UpdatedAt = DateTime.UtcNow
             };
 
-            // 1. 先保存到本地 + Cloudinary（如果以后有头像）
+            // 1. Save to local cache FIRST (works offline)
             var savedProfile = await _profileService.SaveProfileAsync(
                 profile,
                 avatarStream: null,
                 avatarFileName: null);
 
-            // 2. Sync to Firebase Realtime Database (cloud)
-            var url = $"users/{firebaseUser.Uid}.json?auth={idToken}";
-            var response = await _httpClient.PutAsJsonAsync(url, savedProfile);
+            System.Diagnostics.Debug.WriteLine("Profile saved to local cache");
 
-            if (!response.IsSuccessStatusCode)
-            {
-                await DisplayAlert(
-                    "Warning",
-                    $"Profile saved locally but sync failed ({(int)response.StatusCode}).",
-                    "OK");
-                return;
-            }
+            // 2. Try to sync to Firebase in background (don't block if offline)
+            _ = SyncProfileToFirebaseAsync(firebaseUser.Uid, savedProfile);
 
             await DisplayAlert("Success", "Profile saved.", "OK");
             await Navigation.PopAsync();
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Error", ex.ToString(), "OK");
+            await DisplayAlert("Error", $"Failed to save profile: {ex.Message}", "OK");
+        }
+    }
+
+    /// <summary>
+    /// Background sync: pushes profile to Firebase
+    /// </summary>
+    private async Task SyncProfileToFirebaseAsync(string userId, UserProfileDto profile)
+    {
+        try
+        {
+            var firebaseUser = CrossFirebaseAuth.Current.CurrentUser;
+            if (firebaseUser == null) return;
+
+            var tokenResult = await firebaseUser.GetIdTokenResultAsync(false);
+            var idToken = tokenResult.Token;
+            if (string.IsNullOrWhiteSpace(idToken)) return;
+
+            var url = $"users/{userId}.json?auth={idToken}";
+            var response = await _httpClient.PutAsJsonAsync(url, profile);
+
+            if (response.IsSuccessStatusCode)
+            {
+                System.Diagnostics.Debug.WriteLine("Profile synced to Firebase");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"Profile sync failed: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Offline or network error - that's OK, profile is saved locally
+            System.Diagnostics.Debug.WriteLine($"Profile sync to Firebase failed (offline?): {ex.Message}");
         }
     }
 }

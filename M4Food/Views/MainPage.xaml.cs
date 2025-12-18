@@ -31,11 +31,17 @@ namespace M4Food.Views
             InitializeComponent();
             PopulateCategoryResults("All");
             UpdateCategoryButtonStyle("All");
+
+            // Subscribe to cart changes to update badge
+            CartService.Current.CartChanged += OnCartChanged;
         }
 
         protected override async void OnAppearing()
         {
             base.OnAppearing();
+
+            // Update cart badge when page appears
+            UpdateCartBadge();
 
 #if ANDROID
             try
@@ -51,6 +57,27 @@ namespace M4Food.Views
                 System.Diagnostics.Debug.WriteLine($"Failed to init FCM on MainPage: {ex.Message}");
             }
 #endif
+        }
+
+        private void OnCartChanged(object? sender, EventArgs e)
+        {
+            // Update badge on main thread
+            MainThread.BeginInvokeOnMainThread(UpdateCartBadge);
+        }
+
+        private void UpdateCartBadge()
+        {
+            var count = CartService.Current.TotalItemCount;
+            
+            if (count > 0)
+            {
+                CartBadge.IsVisible = true;
+                CartBadgeLabel.Text = count > 99 ? "99+" : count.ToString();
+            }
+            else
+            {
+                CartBadge.IsVisible = false;
+            }
         }
 
         private void PopulateCategoryResults(string category)
