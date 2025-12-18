@@ -303,12 +303,12 @@ namespace M4Food.Views
 
         private async void OnFreeDeliveryTapped(object sender, EventArgs e)
         {
-            await DisplayAlert("Free Delivery", "Code 'FREESHIP30' applied to your clipboard!", "OK");
+            await DisplayAlert("Free Delivery", "Enjoy your food everyday!", "OK");
         }
 
         private async void OnSpecialOfferingTapped(object sender, EventArgs e)
         {
-            await DisplayAlert("Special Offer", "50% Discount applied to Healthy Food category.", "OK");
+            await DisplayAlert("Special for Everyone", "Welcome to use M4Food for order free food.", "OK");
         }
 
         private async void OnSeeAllTapped(object sender, EventArgs e)

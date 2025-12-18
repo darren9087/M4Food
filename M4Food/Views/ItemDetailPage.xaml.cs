@@ -48,10 +48,7 @@ namespace M4Food.Views
                 {
                     NameLabel.Text = _itemName;
                 }
-                if (PriceLabel != null)
-                {
-                    PriceLabel.Text = $"RM {_itemPrice:F2}";
-                }
+                
                 if (StockLabel != null)
                 {
                     StockLabel.Text = $"Stock: {_availableStock} available";
