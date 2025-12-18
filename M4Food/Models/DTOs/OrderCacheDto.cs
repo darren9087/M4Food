@@ -12,6 +12,7 @@ public class OrderCacheDto
     public DateTime OrderDate { get; set; }
     public string Status { get; set; } = string.Empty;
     public double TotalPrice { get; set; }
+    
     public List<OrderItemCacheDto> Items { get; set; } = new();
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
@@ -24,5 +25,6 @@ public class OrderItemCacheDto
     public string Name { get; set; } = string.Empty;
     public int Quantity { get; set; }
     public double Price { get; set; }
+    public string StoreName { get; set; } = string.Empty;
 }
 

@@ -31,15 +31,18 @@
                 </Border>
 
                 <VerticalStackLayout Spacing="5" WidthRequest="250">
-                    <Label Text="Select Store:" FontSize="14" FontAttributes="Bold" TextColor="#1A1A1A" HorizontalTextAlignment="Center"/>
-                    <Picker x:Name="StorePicker" Title="Choose a bakery" HorizontalTextAlignment="Center">
-                        <Picker.ItemsSource>
-                            <x:Array Type="{x:Type x:String}">
-                                <x:String>Vin Bakery</x:String>
-                                <x:String>Welove Bakery</x:String>
-                            </x:Array>
-                        </Picker.ItemsSource>
-                    </Picker>
+                    <Label Text="Store:" 
+                        FontSize="14" 
+                        FontAttributes="Bold" 
+                        TextColor="#1A1A1A" 
+                        HorizontalTextAlignment="Center"/>
+
+                    <Label x:Name="StoreNameLabel" 
+                        Text="Loading..." 
+                        FontSize="16" 
+                        TextColor="#EBC656" 
+                        FontAttributes="Bold"
+                        HorizontalTextAlignment="Center"/>
                 </VerticalStackLayout>
 
                 <Label x:Name="StockLabel" Text="Stock: 0 available" FontSize="14" TextColor="#4CAF50" HorizontalTextAlignment="Center"/>

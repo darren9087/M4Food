@@ -79,7 +79,7 @@
                                                FontSize="16" 
                                                FontAttributes="Bold"
                                                TextColor="#1A1A1A"/>
-                                        <Label Text="{Binding StoreName, StringFormat='Shop: {0}'}" 
+                                        <Label Text="{Binding StoreName, StringFormat='Store: {0}'}" 
                                                FontSize="13" 
                                                TextColor="#666666"
                                                FontAttributes="Italic"/>

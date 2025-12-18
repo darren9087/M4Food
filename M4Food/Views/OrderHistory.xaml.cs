@@ -84,6 +84,8 @@ namespace M4Food.Views
             newOrder.TotalPrice = newOrder.Items.Sum(item => item.Quantity * item.Price);
             _allOrders.Insert(0, newOrder);
 
+           
+
             if (_showActiveOrders)
             {
                 ShowActiveOrders();
@@ -298,6 +300,7 @@ namespace M4Food.Views
         public string Name { get; set; } = string.Empty;
         public int Quantity { get; set; }
         public double Price { get; set; }
+        public string StoreName { get; set; } = string.Empty;
     }
 
     public class Order
@@ -307,6 +310,8 @@ namespace M4Food.Views
         public string Status { get; set; } = string.Empty;
         public ObservableCollection<OrderItem> Items { get; set; } = new ObservableCollection<OrderItem>();
         public double TotalPrice { get; set; }
+
+        public string StoreDisplay => Items.Count > 0 ? Items[0].StoreName : "Unknown Store";
 
         /// <summary>
         /// Returns true if the order is still active (can be confirmed or cancelled)

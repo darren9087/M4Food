@@ -8,21 +8,29 @@ namespace M4Food.Views
     public partial class ItemDetailPage : ContentPage
     {
         private readonly string _itemName;
-        private double _itemPrice = 5.00;
+        private readonly string _storeName;
         private int _availableStock = 10;
         private int _quantity = 1;
 
-        public ItemDetailPage(string itemName)
+        public ItemDetailPage(string itemName, string storeName)
         {
             InitializeComponent();
 
             _itemName = string.IsNullOrWhiteSpace(itemName) ? "Unknown Item" : itemName;
+            _storeName = string.IsNullOrWhiteSpace(storeName) ? "Unknown Store" : storeName;
             this.Title = _itemName;
+
+            if (StoreNameLabel != null)
+            {
+                StoreNameLabel.Text = _storeName;
+            }
 
             if (QuantityLabel != null)
             {
                 QuantityLabel.Text = _quantity.ToString();
             }
+
+            _storeName = storeName;
         }
 
         /// <summary>
@@ -126,7 +134,7 @@ namespace M4Food.Views
 
             for (int i = 0; i < _quantity; i++)
             {
-                M4Food.Views.CartService.Current.AddOrUpdateItem(_itemName);
+                M4Food.Views.CartService.Current.AddOrUpdateItem(_itemName, _storeName);
             }
 
             await DisplayAlert("Added to Cart", $"{_quantity} x {_itemName} added to your cart!", "OK");

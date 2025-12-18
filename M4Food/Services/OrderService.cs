@@ -161,7 +161,8 @@ public class OrderService : IOrderService
                     {
                         Name = i.Name,
                         Quantity = i.Quantity,
-                        Price = i.Price
+                        Price = i.Price,
+                        StoreName = i.StoreName
                     }).ToList() ?? new(),
                     LastSyncedAt = DateTime.UtcNow,
                     NeedsSync = false
@@ -202,7 +203,8 @@ public class OrderService : IOrderService
                     {
                         Name = i.Name,
                         Quantity = i.Quantity,
-                        Price = i.Price
+                        Price = i.Price,
+                        StoreName = i.StoreName
                     }).ToList()
                 };
 
@@ -322,7 +324,8 @@ public class OrderService : IOrderService
             {
                 Name = i.Name,
                 Quantity = i.Quantity,
-                Price = i.Price
+                Price = i.Price,
+                StoreName = i.StoreName
             }).ToList() ?? new(),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -342,7 +345,8 @@ public class OrderService : IOrderService
                 {
                     Name = i.Name,
                     Quantity = i.Quantity,
-                    Price = i.Price
+                    Price = i.Price,
+                    StoreName = i.StoreName
                 }) ?? Enumerable.Empty<OrderItem>())
         };
     }
@@ -360,7 +364,8 @@ public class OrderService : IOrderService
                 {
                     Name = i.Name,
                     Quantity = i.Quantity,
-                    Price = i.Price
+                    Price = i.Price,
+                    StoreName = i.StoreName
                 }) ?? Enumerable.Empty<OrderItem>())
         };
     }
@@ -377,7 +382,8 @@ public class OrderService : IOrderService
             {
                 Name = i.Name,
                 Quantity = i.Quantity,
-                Price = i.Price
+                Price = i.Price,
+                StoreName = i.StoreName
             }).ToList()
         };
     }
@@ -402,4 +408,5 @@ internal class OrderItemDto
     public string Name { get; set; } = string.Empty;
     public int Quantity { get; set; }
     public double Price { get; set; }
+    public string StoreName { get; set; } = string.Empty;
 }

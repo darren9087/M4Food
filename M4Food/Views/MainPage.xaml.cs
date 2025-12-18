@@ -14,16 +14,17 @@ namespace M4Food.Views
             public string? Name { get; set; }
             public string? Category { get; set; }
             public string? ImageSource { get; set; }
+            public string? StoreName { get; set; }
         }
 
         private List<Product> _allProducts = new List<Product>
         {
-            new Product { Name = "Artisan Bread", Category = "Bread", ImageSource = "artisanbread.png" },
-            new Product { Name = "Butter Croissant", Category = "Bread", ImageSource = "buttercroissant.png" },
-            new Product { Name = "Choco Cake", Category = "Cake", ImageSource = "chococake.png" },
-            new Product { Name = "Blueberry Muffin", Category = "Cake", ImageSource = "muffin.png" },
-            new Product { Name = "Glazed Donut", Category = "Others", ImageSource = "glazeddonut.png" },
-            new Product { Name = "Choco Chip", Category = "Others", ImageSource = "chocochip.png" },
+            new Product { Name = "Artisan Bread", Category = "Bread", ImageSource = "artisanbread.png", StoreName = "Vin Bakery" },
+            new Product { Name = "Butter Croissant", Category = "Bread", ImageSource = "buttercroissant.png", StoreName = "Vin Bakery" },
+            new Product { Name = "Choco Cake", Category = "Cake", ImageSource = "chococake.png", StoreName = "Vin Bakery" },
+            new Product { Name = "Blueberry Muffin", Category = "Cake", ImageSource = "muffin.png", StoreName = "Welove Bakery" },
+            new Product { Name = "Glazed Donut", Category = "Others", ImageSource = "glazeddonut.png", StoreName = "Welove Bakery" },
+            new Product { Name = "Choco Chip", Category = "Others", ImageSource = "chocochip.png", StoreName = "Welove Bakery" },
         };
 
         public MainPage()
@@ -158,6 +159,7 @@ namespace M4Food.Views
                 };
 
                 string productName = product.Name ?? "Unknown Item";
+                string productStore = product.StoreName ?? "Unknown Store";
 
                 var tapGesture = new TapGestureRecognizer
                 {
@@ -165,7 +167,7 @@ namespace M4Food.Views
                 };
                 tapGesture.Tapped += (s, args) =>
                 {
-                    _ = NavigateToItemDetail(outerFrame, productName);
+                    _ = NavigateToItemDetail(outerFrame, productName, productStore);
                 };
                 outerFrame.GestureRecognizers.Add(tapGesture);
 
@@ -234,14 +236,15 @@ namespace M4Food.Views
             await ScrollViewContainer.ScrollToAsync(CategoryResultsSection, ScrollToPosition.Start, true);
         }
 
-        private async void OnFoodItemTapped(object sender, string itemName)
+        private async void OnFoodItemTapped(object sender, string itemName, string storeName)
         {
-            await NavigateToItemDetail(sender, itemName);
+            await NavigateToItemDetail(sender, itemName, storeName);
         }
 
         private async void OnFoodItemTapped(object sender, EventArgs e)
         {
             string itemName = "Selected Item";
+            string storeName = "Unknown Store";
 
             if (e is TappedEventArgs tappedArgs && tappedArgs.Parameter is string param)
             {
@@ -252,45 +255,43 @@ namespace M4Food.Views
                 itemName = contextName;
             }
 
-            await NavigateToItemDetail(sender, itemName);
+            await NavigateToItemDetail(sender, itemName, storeName);
         }
 
         private async void OnPreferredArtisanBreadTapped(object sender, EventArgs e)
         {
-            await NavigateToItemDetail(sender, "Artisan Bread");
+            await NavigateToItemDetail(sender, "Artisan Bread", "Vin Bakery");
         }
 
         private async void OnPreferredButterCroissantTapped(object sender, EventArgs e)
         {
-            await NavigateToItemDetail(sender, "Butter Croissant");
+            await NavigateToItemDetail(sender, "Butter Croissant", "Vin Bakery");
         }
 
         private async void OnPreferredChocoCakeTapped(object sender, EventArgs e)
         {
-            await NavigateToItemDetail(sender, "Choco Cake");
+            await NavigateToItemDetail(sender, "Choco Cake", "Vin Bakery");
         }
 
         private async void OnPreferredGlazedDonutTapped(object sender, EventArgs e)
         {
-            await NavigateToItemDetail(sender, "Glazed Donut");
+            await NavigateToItemDetail(sender, "Glazed Donut", "Welove Bakery");
         }
 
         private async void OnPreferredChocoChipTapped(object sender, EventArgs e)
         {
-            await NavigateToItemDetail(sender, "Choco Chip");
+            await NavigateToItemDetail(sender, "Choco Chip", "Welove Bakery");
         }
 
         private async void OnPreferredBlueberryMuffinTapped(object sender, EventArgs e)
         {
-            await NavigateToItemDetail(sender, "Blueberry Muffin");
+            await NavigateToItemDetail(sender, "Blueberry Muffin", "Welove Bakery");
         }
 
-        private async Task NavigateToItemDetail(object sender, string itemName)
+        private async Task NavigateToItemDetail(object sender, string itemName, string storeName)
         {
-            if (string.IsNullOrWhiteSpace(itemName))
-            {
-                itemName = "Selected Item";
-            }
+            if (string.IsNullOrWhiteSpace(itemName)) itemName = "Selected Item";
+            if (string.IsNullOrWhiteSpace(storeName)) storeName = "Unknown Store";
 
             if (sender is VisualElement element)
             {
@@ -298,7 +299,7 @@ namespace M4Food.Views
                 await element.ScaleTo(1, 80, Easing.CubicIn);
             }
 
-            await Navigation.PushAsync(new ItemDetailPage(itemName));
+            await Navigation.PushAsync(new ItemDetailPage(itemName, storeName));
         }
 
         private async void OnFreeDeliveryTapped(object sender, EventArgs e)

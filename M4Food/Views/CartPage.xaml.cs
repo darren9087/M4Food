@@ -112,7 +112,8 @@ namespace M4Food.Views
                         {
                             Name = item.Name,
                             Quantity = item.Quantity,
-                            
+                            StoreName = item.StoreName
+
                         })
                     ),
                     

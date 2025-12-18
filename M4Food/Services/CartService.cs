@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 
 namespace M4Food.Views
 {
@@ -68,7 +69,7 @@ namespace M4Food.Views
         /// </summary>
         public int TotalItemCount => Items.Sum(i => i.Quantity);
 
-        public void AddOrUpdateItem(string itemName)
+        public void AddOrUpdateItem(string itemName, string storeName)
         {
             // Check if the item already exists in the cart
             var existingItem = Items.FirstOrDefault(i => i.Name == itemName);
@@ -81,7 +82,7 @@ namespace M4Food.Views
             else
             {
                 // If not, add a new CartItem
-                Items.Add(new CartItem { Name = itemName });
+                Items.Add(new CartItem { Name = itemName, StoreName = storeName });
             }
         }
 
