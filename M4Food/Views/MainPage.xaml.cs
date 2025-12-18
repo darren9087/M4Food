@@ -96,19 +96,19 @@ namespace M4Food.Views
             foreach (var product in filteredProducts)
             {
                 // 创建 StackLayout 包含 Image 和 Label
-                var stackLayout = new StackLayout 
-                { 
-                    VerticalOptions = LayoutOptions.Center, 
+                var stackLayout = new StackLayout
+                {
+                    VerticalOptions = LayoutOptions.Center,
                     Spacing = 5,
                     InputTransparent = true  // 让点击穿透到外层 Frame
                 };
 
                 // Image Frame (MAUI handles image caching automatically)
-                var productImage = new Image 
-                { 
-                    Source = product.ImageSource, 
-                    Aspect = Aspect.AspectFit, 
-                    HeightRequest = 50, 
+                var productImage = new Image
+                {
+                    Source = product.ImageSource,
+                    Aspect = Aspect.AspectFit,
+                    HeightRequest = 50,
                     WidthRequest = 50,
                     InputTransparent = true  // 让点击穿透
                 };
@@ -156,13 +156,13 @@ namespace M4Food.Views
                 // 添加点击手势 (导航到 ItemDetailPage)
                 // 使用闭包捕获 product.Name，确保参数正确传递
                 string productName = product.Name ?? "Unknown Item";
-                
+
                 // 创建更可靠的手势识别器
                 var tapGesture = new TapGestureRecognizer
                 {
                     NumberOfTapsRequired = 1
                 };
-                tapGesture.Tapped += (s, args) => 
+                tapGesture.Tapped += (s, args) =>
                 {
                     // 立即响应，不等待
                     _ = NavigateToItemDetail(outerFrame, productName);
@@ -259,7 +259,7 @@ namespace M4Food.Views
         private async void OnFoodItemTapped(object sender, EventArgs e)
         {
             string itemName = "Selected Item";
-            
+
             // Try to get parameter from TappedEventArgs
             if (e is TappedEventArgs tappedArgs && tappedArgs.Parameter is string param)
             {
@@ -349,8 +349,25 @@ namespace M4Food.Views
         // 9. Profile Navigation (navigates to ProfilePage)
         private async void OnAccountTapped(object sender, EventArgs e)
         {
-            // Assumes ProfilePage exists
-            await Navigation.PushAsync(new M4Food.Views.ProfilePage());
+            // 1. Display the Pop-up (ActionSheet) with the new options
+            string action = await DisplayActionSheet(
+                "Account Options",
+                "Cancel",
+                null,
+                "Edit Profile",
+                "Sign Up for Donation"); // Changed from "Sign Up / Log In" to "Sign Up for Donation"
+
+            // 2. Handle the User's Choice
+            if (action == "Edit Profile")
+            {
+                // Navigate to Profile Page
+                await Navigation.PushAsync(new M4Food.Views.ProfilePage());
+            }
+            else if (action == "Sign Up for Donation")
+            {
+                // Navigate to the new Donation Page
+                await Navigation.PushAsync(new M4Food.Views.DonationPage());
+            }
         }
     }
 }

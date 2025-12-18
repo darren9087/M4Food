@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="M4Food.Views.DonationPage"
+             Title="Donation Sign Up"
+             BackgroundColor="#FDF8E5"
+             NavigationPage.HasNavigationBar="False">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Padding="20,15,20,10">
+            <Frame CornerRadius="10" Padding="0" HeightRequest="40" WidthRequest="40" BackgroundColor="White" HasShadow="False" HorizontalOptions="Start">
+                <Frame.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnBackClicked"/>
+                </Frame.GestureRecognizers>
+                <Label Text="◀" TextColor="#1A1A1A" VerticalOptions="Center" HorizontalOptions="Center" FontSize="18"/>
+            </Frame>
+            <Label Grid.Column="1" Text="Register Store" FontSize="18" FontAttributes="Bold" TextColor="#1A1A1A" VerticalOptions="Center" HorizontalOptions="Center" Margin="-40,0,0,0"/>
+        </Grid>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="20" Padding="30,10,30,40">
+
+                <VerticalStackLayout Spacing="5" Margin="0,0,0,10">
+                    <Label Text="Join the Rescue Mission" 
+                           FontSize="24" 
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center" 
+                           TextColor="#1A1A1A"/>
+                    <Label Text="Register your store to donate surplus food." 
+                           FontSize="15" 
+                           HorizontalOptions="Center" 
+                           HorizontalTextAlignment="Center"
+                           TextColor="#666666"/>
+                </VerticalStackLayout>
+
+                <Frame BackgroundColor="White" CornerRadius="20" Padding="20" HasShadow="False" BorderColor="#E0E0E0" HeightRequest="150">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnUploadPhotoTapped"/>
+                    </Frame.GestureRecognizers>
+                    <VerticalStackLayout VerticalOptions="Center" Spacing="10">
+                        <Image x:Name="StoreImagePreview" 
+                               Source="camera_icon.png" 
+                               HeightRequest="50" 
+                               WidthRequest="50" 
+                               HorizontalOptions="Center"
+                               Aspect="AspectFill"/>
+                        <Label x:Name="UploadTextLabel" 
+                               Text="Tap to Upload Store Photo" 
+                               TextColor="#EBC656" 
+                               FontAttributes="Bold" 
+                               HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <VerticalStackLayout Spacing="15">
+
+                    <Frame BackgroundColor="White" CornerRadius="15" Padding="15,0" HasShadow="False" BorderColor="Transparent" HeightRequest="50">
+                        <Grid ColumnDefinitions="30,*">
+                            <Label Text="🏢" VerticalOptions="Center" Grid.Column="0"/>
+                            <Entry Placeholder="Store Name" 
+                                   PlaceholderColor="#999999"
+                                   TextColor="#1A1A1A"
+                                   Grid.Column="1"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+                    </Frame>
+
+                    <Frame BackgroundColor="White" CornerRadius="15" Padding="15,0" HasShadow="False" BorderColor="Transparent" HeightRequest="50">
+                        <Grid ColumnDefinitions="30,*">
+                            <Label Text="📍" VerticalOptions="Center" Grid.Column="0"/>
+                            <Entry Placeholder="Store Address" 
+                                   PlaceholderColor="#999999"
+                                   TextColor="#1A1A1A"
+                                   Grid.Column="1"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+                    </Frame>
+
+                    <Frame BackgroundColor="White" CornerRadius="15" Padding="15,0" HasShadow="False" BorderColor="Transparent" HeightRequest="50">
+                        <Grid ColumnDefinitions="30,*">
+                            <Label Text="📞" VerticalOptions="Center" Grid.Column="0"/>
+                            <Entry Placeholder="Phone Number" 
+                                   Keyboard="Telephone" 
+                                   PlaceholderColor="#999999"
+                                   TextColor="#1A1A1A"
+                                   Grid.Column="1"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+                    </Frame>
+
+                </VerticalStackLayout>
+
+                <Button Text="Register Store"
+                        BackgroundColor="#EBC656"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        FontSize="16"
+                        CornerRadius="25"
+                        HeightRequest="55"
+                        Margin="0,10,0,0"
+                        Clicked="OnSignUpClicked"
+                        Shadow="{Shadow Brush=Black, Offset='0,4', Opacity=0.1}"/>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
