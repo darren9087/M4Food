@@ -70,11 +70,11 @@
                         WidthRequest="300"
                         HorizontalOptions="Center"
                         StrokeThickness="0">
-					<Image x:Name="ItemImage"
+                    <Image x:Name="ItemImage"
                            Aspect="AspectFit"
                            HorizontalOptions="Center"
                            VerticalOptions="Center"/>
-				</Border>
+                </Border>
 
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Price:" 

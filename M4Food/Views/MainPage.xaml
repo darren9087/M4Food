@@ -179,7 +179,7 @@
         </ScrollView>
 
         <Frame Grid.Row="2" BackgroundColor="#F4D03F" CornerRadius="0" Padding="0,15" HasShadow="False">
-            <Grid ColumnDefinitions="*,*,*">
+            <Grid ColumnDefinitions="*,*,*,*">
                 <StackLayout Grid.Column="0" Spacing="2" HorizontalOptions="Center">
                     <StackLayout.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnHomeTapped"/>
@@ -195,6 +195,13 @@
                     <Label Text="CART" FontSize="10" FontAttributes="Bold" TextColor="#333333" HorizontalTextAlignment="Center"/>
                 </StackLayout>
                 <StackLayout Grid.Column="2" Spacing="2" HorizontalOptions="Center">
+                    <StackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnOrdersTapped"/>
+                    </StackLayout.GestureRecognizers>
+                    <Label Text="📋" FontSize="24" HorizontalOptions="Center" TextColor="#333333"/>
+                    <Label Text="ORDERS" FontSize="10" FontAttributes="Bold" TextColor="#333333" HorizontalTextAlignment="Center"/>
+                </StackLayout>
+                <StackLayout Grid.Column="3" Spacing="2" HorizontalOptions="Center">
                     <StackLayout.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnAccountTapped"/>
                     </StackLayout.GestureRecognizers>

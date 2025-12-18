@@ -1,5 +1,8 @@
 ﻿using Microsoft.Maui.Controls;
 using System;
+using System.Threading.Tasks;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace M4Food.Views
 {
@@ -8,11 +11,7 @@ namespace M4Food.Views
         public CartPage()
         {
             InitializeComponent();
-
-            // Set the BindingContext to the singleton instance
             this.BindingContext = CartService.Current;
-
-            // Update the total price every time the page appears
             this.Appearing += CartPage_Appearing;
         }
 
@@ -27,7 +26,6 @@ namespace M4Food.Views
             TotalLabel.Text = $"RM {total:F2}";
         }
 
-        // Custom back button logic
         private async void OnBackClicked(object sender, EventArgs e)
         {
             await Navigation.PopAsync();
@@ -38,24 +36,63 @@ namespace M4Food.Views
             if (CartService.Current.Items.Count == 0)
             {
                 await DisplayAlert("Checkout", "Your cart is empty. Please add some items first.", "OK");
+                return;
             }
-            else
-            {
-                var total = CartService.Current.GetTotal();
-                await DisplayAlert("Checkout", $"Total: RM {total:F2}. Proceeding to payment...", "OK");
 
-                // Clear the cart after successful checkout simulation
+            var total = CartService.Current.GetTotal();
+            var confirm = await DisplayAlert("Confirm Checkout",
+                $"Total: RM {total:F2}\n\nProceed to payment?",
+                "Yes, Checkout",
+                "Cancel");
+
+            if (!confirm)
+                return;
+
+            try
+            {
+                var newOrder = new Order
+                {
+                    OrderId = $"ORD{DateTime.Now:yyyyMMddHHmmss}",
+                    OrderDate = DateTime.Now,
+                    Status = "Processing",
+                    Items = new ObservableCollection<OrderItem>(
+                        CartService.Current.Items.Select(item => new OrderItem
+                        {
+                            Name = item.Name,
+                            Quantity = item.Quantity,
+                            Price = item.Price
+                        })
+                    ),
+                    TotalPrice = total
+                };
+
+                newOrder.TotalPrice = newOrder.Items.Sum(item => item.Quantity * item.Price);
+
+                await DisplayAlert("Order Confirmed!",
+                    $"Order #{newOrder.OrderId} placed successfully!\n\nTotal: RM {total:F2}\nEstimated delivery: 30-45 minutes",
+                    "OK");
+
                 CartService.Current.ClearCart();
+                UpdateTotal();
+
+                await Navigation.PopAsync();
+
+                var ordersPage = new OrdersPage();
+                ordersPage.AddNewOrder(newOrder);
+                await Navigation.PushAsync(ordersPage);
 
 #if ANDROID
-                // Show order confirmation notification
                 NotificationHelper.ShowNotification(
-                    "Order Confirmed",
-                    $"Your order of RM {total:F2} has been placed successfully!"
+                    "Order Confirmed!",
+                    $"Your order #{newOrder.OrderId} has been placed successfully!"
                 );
 #endif
-
-                await Navigation.PopAsync(); // Navigate back after checkout
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Checkout Error",
+                    $"Failed to process order: {ex.Message}",
+                    "OK");
             }
         }
     }

@@ -92,6 +92,11 @@
 		</ItemGroup>
 		<Message Text="Removed ktx jar files from D8 inputs" Importance="high" />
 	</Target>
+	<ItemGroup>
+	  <Compile Update="Views\OrderHistory.xaml.cs">
+	    <DependentUpon>OrderHistory.xaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
 
 	<ItemGroup>
 		<MauiXaml Update="Views\CartPage.xaml">
@@ -110,6 +115,9 @@
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Views\MainPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Views\OrderHistory.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Views\ProfilePage.xaml">
