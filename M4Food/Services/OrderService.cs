@@ -156,12 +156,12 @@ public class OrderService : IOrderService
                     OrderId = dto.OrderId,
                     OrderDate = dto.OrderDate,
                     Status = dto.Status,
-                    TotalPrice = dto.TotalPrice,
+                    
                     Items = dto.Items?.Select(i => new OrderItemCacheDto
                     {
                         Name = i.Name,
                         Quantity = i.Quantity,
-                        Price = i.Price,
+                        
                         StoreName = i.StoreName
                     }).ToList() ?? new(),
                     LastSyncedAt = DateTime.UtcNow,
@@ -198,12 +198,12 @@ public class OrderService : IOrderService
                     OrderId = order.OrderId,
                     OrderDate = order.OrderDate,
                     Status = order.Status,
-                    TotalPrice = order.TotalPrice,
+                    
                     Items = order.Items?.Select(i => new OrderItemDto
                     {
                         Name = i.Name,
                         Quantity = i.Quantity,
-                        Price = i.Price,
+                        
                         StoreName = i.StoreName
                     }).ToList()
                 };
@@ -319,12 +319,12 @@ public class OrderService : IOrderService
             OrderId = order.OrderId,
             OrderDate = order.OrderDate,
             Status = order.Status,
-            TotalPrice = order.TotalPrice,
+            
             Items = order.Items?.Select(i => new OrderItemCacheDto
             {
                 Name = i.Name,
                 Quantity = i.Quantity,
-                Price = i.Price,
+                
                 StoreName = i.StoreName
             }).ToList() ?? new(),
             CreatedAt = DateTime.UtcNow,
@@ -339,13 +339,13 @@ public class OrderService : IOrderService
             OrderId = dto.OrderId,
             OrderDate = dto.OrderDate,
             Status = dto.Status,
-            TotalPrice = dto.TotalPrice,
+            
             Items = new System.Collections.ObjectModel.ObservableCollection<OrderItem>(
                 dto.Items?.Select(i => new OrderItem
                 {
                     Name = i.Name,
                     Quantity = i.Quantity,
-                    Price = i.Price,
+                    
                     StoreName = i.StoreName
                 }) ?? Enumerable.Empty<OrderItem>())
         };
@@ -358,13 +358,13 @@ public class OrderService : IOrderService
             OrderId = dto.OrderId,
             OrderDate = dto.OrderDate,
             Status = dto.Status,
-            TotalPrice = dto.TotalPrice,
+            
             Items = new System.Collections.ObjectModel.ObservableCollection<OrderItem>(
                 dto.Items?.Select(i => new OrderItem
                 {
                     Name = i.Name,
                     Quantity = i.Quantity,
-                    Price = i.Price,
+                    
                     StoreName = i.StoreName
                 }) ?? Enumerable.Empty<OrderItem>())
         };
@@ -377,12 +377,12 @@ public class OrderService : IOrderService
             OrderId = order.OrderId,
             OrderDate = order.OrderDate,
             Status = order.Status,
-            TotalPrice = order.TotalPrice,
+           
             Items = order.Items?.Select(i => new OrderItemDto
             {
                 Name = i.Name,
                 Quantity = i.Quantity,
-                Price = i.Price,
+                
                 StoreName = i.StoreName
             }).ToList()
         };
@@ -399,7 +399,7 @@ internal class OrderDto
     public string OrderId { get; set; } = string.Empty;
     public DateTime OrderDate { get; set; }
     public string Status { get; set; } = string.Empty;
-    public double TotalPrice { get; set; }
+    
     public List<OrderItemDto>? Items { get; set; }
 }
 
@@ -407,6 +407,6 @@ internal class OrderItemDto
 {
     public string Name { get; set; } = string.Empty;
     public int Quantity { get; set; }
-    public double Price { get; set; }
+    
     public string StoreName { get; set; } = string.Empty;
 }

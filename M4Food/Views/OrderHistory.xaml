@@ -138,7 +138,7 @@
                                        Margin="0,2,0,0"/>
 
                                 <Label Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3"
-                                       Text="{Binding Items[0].StoreName, StringFormat='Store: {0}'}" 
+                                       Text="{Binding StoreDisplay, StringFormat='Store: {0}', FallbackValue='Store: Loading...'}" 
                                        FontSize="12"
                                        TextColor="#666666"
                                        FontAttributes="Italic"

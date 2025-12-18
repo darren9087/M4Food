@@ -49,6 +49,11 @@ namespace M4Food.Views
                 // Load orders from Firebase
                 _allOrders = await _orderService.GetOrdersAsync();
 
+                foreach (var order in _allOrders)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Order {order.OrderId} Store: {order.StoreDisplay}");
+                }
+
                 System.Diagnostics.Debug.WriteLine($"Loaded {_allOrders.Count} orders");
 
                 // Refresh the current view
@@ -311,7 +316,18 @@ namespace M4Food.Views
         public ObservableCollection<OrderItem> Items { get; set; } = new ObservableCollection<OrderItem>();
         public double TotalPrice { get; set; }
 
-        public string StoreDisplay => Items.Count > 0 ? Items[0].StoreName : "Unknown Store";
+        public string StoreDisplay
+        {
+            get
+            {
+             
+                if (Items == null || Items.Count == 0)
+                {
+                    return "No Store Info";
+                }
+                return Items[0].StoreName;
+            }
+        }
 
         /// <summary>
         /// Returns true if the order is still active (can be confirmed or cancelled)
