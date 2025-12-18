@@ -11,10 +11,11 @@ namespace M4Food.Views
     // ----------------------------------------------------------------------
     public class CartItem : INotifyPropertyChanged
     {
+        
+        public string? StoreName { get; set; }
         private int _quantity = 1;
 
         public string? Name { get; set; }
-        public double Price { get; set; } = 5.00; // Assumed price
 
         public int Quantity
         {
@@ -25,15 +26,12 @@ namespace M4Food.Views
                 {
                     _quantity = value;
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(TotalPrice)); // Notify that TotalPrice has changed
+                    
                     // Notify CartService that quantity changed
                     CartService.Current.NotifyCartChanged();
                 }
             }
         }
-
-        // Calculated property for the total price of this item
-        public double TotalPrice => Price * Quantity;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -87,11 +85,7 @@ namespace M4Food.Views
             }
         }
 
-        public double GetTotal()
-        {
-            // Calculate the grand total of all items
-            return Items.Sum(i => i.TotalPrice);
-        }
+        
 
         public void ClearCart()
         {

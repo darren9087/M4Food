@@ -37,7 +37,7 @@
                             <Grid Padding="20">
                                 <StackLayout Spacing="5" VerticalOptions="Center">
                                     <Label Text="FREE DELIVERY" FontSize="20" FontAttributes="Bold" TextColor="White"/>
-                                    <Label Text="On your first order" FontSize="14" TextColor="White"/>
+                                    <Label Text="On your every order" FontSize="14" TextColor="White"/>
                                 </StackLayout>
                                 <Label Text="🚚" FontSize="40" HorizontalOptions="End" VerticalOptions="Center"/>
                             </Grid>
@@ -48,7 +48,7 @@
                             </Frame.GestureRecognizers>
                             <Grid Padding="20">
                                 <StackLayout Spacing="5" VerticalOptions="Center">
-                                    <Label Text="50% OFF" FontSize="20" FontAttributes="Bold" TextColor="White"/>
+                                    <Label Text="Your Best Choice" FontSize="20" FontAttributes="Bold" TextColor="White"/>
                                     <Label Text="Healthy Food Special" FontSize="14" TextColor="White"/>
                                 </StackLayout>
                             </Grid>

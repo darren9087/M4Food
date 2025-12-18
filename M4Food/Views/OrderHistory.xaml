@@ -137,15 +137,7 @@
                                        LineBreakMode="TailTruncation"
                                        Margin="0,2,0,0"/>
 
-                                <!-- Total Price -->
-                                <Label Grid.Column="1" Grid.Row="3"
-                                       Text="{Binding TotalPrice, StringFormat='RM {0:F2}'}"
-                                       FontSize="16"
-                                       FontAttributes="Bold"
-                                       TextColor="#E8C547"
-                                       VerticalOptions="End"
-                                       HorizontalOptions="End"
-                                       Margin="0,5,0,0"/>
+                                
 
                                 <!-- Action Buttons (only for active orders) -->
                                 <StackLayout Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="4"
