@@ -304,12 +304,12 @@ namespace M4Food.Views
 
         private async void OnFreeDeliveryTapped(object sender, EventArgs e)
         {
-            await DisplayAlert("Free Delivery", "Enjoy your food everyday!", "OK");
+            await DisplayAlert("Free Surplus Food", "Enjoy your food everyday!", "OK");
         }
 
         private async void OnSpecialOfferingTapped(object sender, EventArgs e)
         {
-            await DisplayAlert("Special for Everyone", "Welcome to use M4Food for order free food.", "OK");
+            await DisplayAlert("Special for Everyone", "Use M4Food for order free food.", "OK");
         }
 
         private async void OnSeeAllTapped(object sender, EventArgs e)
@@ -329,7 +329,25 @@ namespace M4Food.Views
 
         private async void OnAccountTapped(object sender, EventArgs e)
         {
-            await Navigation.PushAsync(new M4Food.Views.ProfilePage());
+            // 1. Display the Pop-up (ActionSheet) with the new options
+            string action = await DisplayActionSheet(
+                "Account Options",
+                "Cancel",
+                null,
+                "Edit Profile",
+                "Sign Up for Donation"); // Changed from "Sign Up / Log In" to "Sign Up for Donation"
+
+            // 2. Handle the User's Choice
+            if (action == "Edit Profile")
+            {
+                // Navigate to Profile Page
+                await Navigation.PushAsync(new M4Food.Views.ProfilePage());
+            }
+            else if (action == "Sign Up for Donation")
+            {
+                // Navigate to the new Donation Page
+                await Navigation.PushAsync(new M4Food.Views.DonationPage());
+            }
         }
 
         private async void OnOrdersTapped(object sender, EventArgs e)

@@ -36,10 +36,10 @@
                             </Frame.GestureRecognizers>
                             <Grid Padding="20">
                                 <StackLayout Spacing="5" VerticalOptions="Center">
-                                    <Label Text="FREE DELIVERY" FontSize="20" FontAttributes="Bold" TextColor="White"/>
-                                    <Label Text="On your every order" FontSize="14" TextColor="White"/>
+                                    <Label Text="FREE SURPLUS FOOD" FontSize="18" FontAttributes="Bold" TextColor="White"/>
+                                    <Label Text="On every order" FontSize="14" TextColor="White"/>
                                 </StackLayout>
-                                <Label Text="🚚" FontSize="40" HorizontalOptions="End" VerticalOptions="Center"/>
+                                <Label Text="🍪" FontSize="38" HorizontalOptions="End" VerticalOptions="Center"/>
                             </Grid>
                         </Frame>
                         <Frame CornerRadius="15" Padding="0" HasShadow="False" WidthRequest="280" HeightRequest="140" BackgroundColor="#4CAF50" BorderColor="Transparent">
@@ -48,9 +48,10 @@
                             </Frame.GestureRecognizers>
                             <Grid Padding="20">
                                 <StackLayout Spacing="5" VerticalOptions="Center">
-                                    <Label Text="Your Best Choice" FontSize="20" FontAttributes="Bold" TextColor="White"/>
-                                    <Label Text="Healthy Food Special" FontSize="14" TextColor="White"/>
+                                    <Label Text="Your Favourite Choices" FontSize="18" FontAttributes="Bold" TextColor="White"/>
+                                    <Label Text="Healthy and Special Food" FontSize="14" TextColor="White"/>
                                 </StackLayout>
+                                <Label Text="🥐" FontSize="36" HorizontalOptions="End" VerticalOptions="Center"/>
                             </Grid>
                         </Frame>
                     </StackLayout>
