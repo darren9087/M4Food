@@ -8,7 +8,10 @@ using System.Threading.Tasks;
 using M4Food.Services;
 #if ANDROID
 using M4Food;
+using Microsoft.Maui.ApplicationModel;
 #endif
+using Microsoft.Maui.Storage;
+using System.Net.Http;
 
 namespace M4Food.Views
 {
@@ -17,6 +20,7 @@ namespace M4Food.Views
         private bool _showActiveOrders = true;
         private List<Order> _allOrders = new List<Order>();
         private readonly IOrderService _orderService;
+        private readonly ICloudinaryService? _cloudinaryService;
 
         public OrdersPage()
         {
@@ -29,6 +33,13 @@ namespace M4Food.Views
                 .Services
                 .GetService(typeof(IOrderService)) as IOrderService
                 ?? throw new InvalidOperationException("IOrderService not registered.");
+
+            // Get CloudinaryService from DI (optional)
+            _cloudinaryService = Application.Current?
+                .Handler?
+                .MauiContext?
+                .Services
+                .GetService(typeof(ICloudinaryService)) as ICloudinaryService;
         }
 
         protected override async void OnAppearing()
@@ -218,9 +229,100 @@ namespace M4Food.Views
 
                 if (!confirm) return;
 
+                // Ask if user wants to upload a photo (optional)
+                string? imageUrl = null;
+                var uploadPhoto = await DisplayAlert(
+                    "Upload Photo",
+                    "Would you like to upload a photo of your received order? (Optional)",
+                    "Yes, Upload Photo",
+                    "Skip");
+
+                if (uploadPhoto && _cloudinaryService != null)
+                {
+                    try
+                    {
+                        // Ask user to choose between camera or gallery
+                        var action = await DisplayActionSheet(
+                            "Select Photo Source",
+                            "Cancel",
+                            null,
+                            "Take Photo",
+                            "Choose from Gallery");
+
+                        if (action == "Take Photo" || action == "Choose from Gallery")
+                        {
+                            FileResult? photo = null;
+                            
+                            if (action == "Take Photo")
+                            {
+                                // Request camera permission on Android
+#if ANDROID
+                                var status = await Permissions.RequestAsync<Permissions.Camera>();
+                                if (status != PermissionStatus.Granted)
+                                {
+                                    await DisplayAlert("Permission Required", 
+                                        "Camera permission is required to take photos. Please enable it in app settings.", 
+                                        "OK");
+                                    return;
+                                }
+#endif
+                                photo = await MediaPicker.Default.CapturePhotoAsync();
+                            }
+                            else if (action == "Choose from Gallery")
+                            {
+                                photo = await MediaPicker.Default.PickPhotoAsync(new MediaPickerOptions
+                                {
+                                    Title = "Select a photo of your order"
+                                });
+                            }
+
+                            if (photo != null)
+                            {
+                                // Show loading indicator
+                                await DisplayAlert("Uploading", "Please wait while we upload your photo...", "OK");
+
+                                // Upload to Cloudinary
+                                using var stream = await photo.OpenReadAsync();
+                                var (url, _) = await _cloudinaryService.UploadImageStreamAsync(
+                                    stream,
+                                    photo.FileName ?? $"order_{orderId}_{DateTime.UtcNow.Ticks}.jpg",
+                                    folder: "m4food/orders/received"
+                                );
+                                
+                                imageUrl = url;
+                                System.Diagnostics.Debug.WriteLine($"Image uploaded successfully: {imageUrl}");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error uploading photo: {ex.Message}");
+                        // Continue without photo if upload fails
+                        await DisplayAlert("Photo Upload Failed", 
+                            "Could not upload photo. Order will be confirmed without photo.", 
+                            "OK");
+                    }
+                }
+
+                // Download image to local cache for offline access
+                string? localImagePath = null;
+                if (!string.IsNullOrEmpty(imageUrl))
+                {
+                    try
+                    {
+                        localImagePath = await DownloadImageToLocalCacheAsync(imageUrl, orderId);
+                        System.Diagnostics.Debug.WriteLine($"Image cached locally: {localImagePath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error caching image locally: {ex.Message}");
+                        // Continue without local cache if download fails
+                    }
+                }
+
                 try
                 {
-                    var success = await _orderService.UpdateOrderStatusAsync(orderId, "Completed");
+                    var success = await _orderService.UpdateOrderStatusAsync(orderId, "Completed", imageUrl, localImagePath);
                     
                     if (success)
                     {
@@ -229,9 +331,14 @@ namespace M4Food.Views
                         if (order != null)
                         {
                             order.Status = "Completed";
+                            order.ReceivedImageUrl = imageUrl;
+                            order.ReceivedImageLocalPath = localImagePath;
                         }
 
-                        await DisplayAlert("Success", "Order marked as completed!", "OK");
+                        var message = string.IsNullOrEmpty(imageUrl) 
+                            ? "Order marked as completed!" 
+                            : "Order marked as completed with photo!";
+                        await DisplayAlert("Success", message, "OK");
                         
                         // Refresh the view
                         ShowActiveOrders();
@@ -256,21 +363,79 @@ namespace M4Food.Views
             }
         }
 
+        /// <summary>
+        /// Downloads an image from URL and saves it to local cache for offline access
+        /// </summary>
+        private async Task<string?> DownloadImageToLocalCacheAsync(string imageUrl, string orderId)
+        {
+            try
+            {
+                // Create cache directory for order images
+                var cacheDirectory = Path.Combine(FileSystem.AppDataDirectory, "order_images");
+                if (!Directory.Exists(cacheDirectory))
+                {
+                    Directory.CreateDirectory(cacheDirectory);
+                }
+
+                // Generate local file path
+                var fileName = $"order_{orderId}_{DateTime.UtcNow.Ticks}.jpg";
+                var localPath = Path.Combine(cacheDirectory, fileName);
+
+                // Download image
+                using var httpClient = new HttpClient();
+                httpClient.Timeout = TimeSpan.FromSeconds(30);
+                
+                var imageData = await httpClient.GetByteArrayAsync(imageUrl);
+                await File.WriteAllBytesAsync(localPath, imageData);
+
+                System.Diagnostics.Debug.WriteLine($"Image downloaded to: {localPath}");
+                return localPath;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error downloading image: {ex.Message}");
+                return null;
+            }
+        }
+
+        private async void OnImageTapped(object sender, EventArgs e)
+        {
+            if (sender is Image image && image.GestureRecognizers.FirstOrDefault() is TapGestureRecognizer tap && 
+                tap.CommandParameter is string orderId)
+            {
+                var order = _allOrders.FirstOrDefault(o => o.OrderId == orderId);
+                if (order != null && !string.IsNullOrEmpty(order.ImageSource))
+                {
+                    // Show full screen image view
+                    await DisplayAlert("Order Image", $"Order #{orderId} received image", "OK");
+                }
+            }
+        }
+
         private async void OnCancelOrderClicked(object sender, EventArgs e)
         {
             if (sender is Button button && button.CommandParameter is string orderId)
             {
                 var confirm = await DisplayAlert(
-                    "Cancel Order",
-                    "Are you sure you want to cancel this order?",
+                    "Cancel Collection",
+                    "Are you sure you want to cancel this collection?",
                     "Yes, Cancel",
                     "No");
 
                 if (!confirm) return;
 
+                // Show cancel reason selection
+                string? cancelReason = await ShowCancelReasonDialogAsync();
+                
+                if (cancelReason == null)
+                {
+                    // User cancelled the reason selection
+                    return;
+                }
+
                 try
                 {
-                    var success = await _orderService.CancelOrderAsync(orderId);
+                    var success = await _orderService.CancelOrderAsync(orderId, cancelReason);
                     
                     if (success)
                     {
@@ -279,24 +444,73 @@ namespace M4Food.Views
                         if (order != null)
                         {
                             order.Status = "Cancelled";
+                            order.CancelReason = cancelReason;
                         }
 
-                        await DisplayAlert("Cancelled", "Order has been cancelled.", "OK");
+                        await DisplayAlert("Cancelled", "Collection has been cancelled.", "OK");
                         
                         // Refresh the view
                         ShowActiveOrders();
                     }
                     else
                     {
-                        await DisplayAlert("Error", "Failed to cancel order.", "OK");
+                        await DisplayAlert("Error", "Failed to cancel collection.", "OK");
                     }
                 }
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"Error cancelling order: {ex.Message}");
-                    await DisplayAlert("Error", "Failed to cancel order. Please try again.", "OK");
+                    await DisplayAlert("Error", "Failed to cancel collection. Please try again.", "OK");
                 }
             }
+        }
+
+        /// <summary>
+        /// Shows a dialog for user to select or enter cancel reason
+        /// </summary>
+        private async Task<string?> ShowCancelReasonDialogAsync()
+        {
+            // Predefined cancel reasons for collectors
+            var reasons = new[]
+            {
+                "Changed my mind, don't need it anymore",
+                "Temporary issue, cannot go to collect",
+                "Address too far / inconvenient to go",
+                "Time not suitable",
+                "Found other alternative",
+                "Other reason"
+            };
+
+            var selectedReason = await DisplayActionSheet(
+                "Please select a reason for cancellation:",
+                "Cancel",
+                null,
+                reasons
+            );
+
+            if (selectedReason == null || selectedReason == "Cancel")
+                return null;
+
+            // If user selected "Other reason", ask them to enter custom reason
+            if (selectedReason == "Other reason")
+            {
+                var customReason = await DisplayPromptAsync(
+                    "Other Reason",
+                    "Please tell us why you are cancelling:",
+                    "OK",
+                    "Cancel",
+                    "Enter your reason here...",
+                    -1,
+                    Keyboard.Default
+                );
+
+                if (string.IsNullOrWhiteSpace(customReason))
+                    return null;
+
+                return $"Other: {customReason}";
+            }
+
+            return selectedReason;
         }
     }
 
@@ -315,6 +529,22 @@ namespace M4Food.Views
         public string Status { get; set; } = string.Empty;
         public ObservableCollection<OrderItem> Items { get; set; } = new ObservableCollection<OrderItem>();
         public double TotalPrice { get; set; }
+        public string? ReceivedImageUrl { get; set; }
+        public string? ReceivedImageLocalPath { get; set; }
+        public string? CancelReason { get; set; }
+        
+        /// <summary>
+        /// Returns the image source path - prefers local path for offline access, falls back to URL
+        /// </summary>
+        public string? ImageSource
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(ReceivedImageLocalPath) && File.Exists(ReceivedImageLocalPath))
+                    return ReceivedImageLocalPath;
+                return ReceivedImageUrl;
+            }
+        }
 
         public string StoreDisplay
         {

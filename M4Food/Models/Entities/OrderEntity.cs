@@ -21,6 +21,9 @@ public class OrderEntity
     public DateTime OrderDate { get; set; }
     public string Status { get; set; } = string.Empty;
     public double TotalPrice { get; set; }
+    public string? ReceivedImageUrl { get; set; }
+    public string? ReceivedImageLocalPath { get; set; }
+    public string? CancelReason { get; set; }
 
     /// <summary>
     /// JSON serialized list of order items

@@ -6,9 +6,9 @@
     <Grid RowDefinitions="Auto,*,Auto">
 
         <StackLayout Grid.Row="0" Padding="20,15,20,15" Spacing="15" BackgroundColor="#FDF8E5">
-            <StackLayout Orientation="Horizontal" Spacing="6" HorizontalOptions="Center">
+                <StackLayout Orientation="Horizontal" Spacing="6" HorizontalOptions="Center">
                 <StackLayout.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnMapTapped"/>
+                    <TapGestureRecognizer Command="{Binding MapTappedCommand}"/>
                 </StackLayout.GestureRecognizers>
                 <Label Text="📍" FontSize="20" TextColor="#FF4B4B" VerticalOptions="Center"/>
                 <Label Text="1, Jalan Universiti, 96000 Sibu..." FontSize="15" TextColor="#333333"
@@ -44,7 +44,7 @@
                         </Frame>
                         <Frame CornerRadius="15" Padding="0" HasShadow="False" WidthRequest="280" HeightRequest="140" BackgroundColor="#4CAF50" BorderColor="Transparent">
                             <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnSpecialOfferingTapped"/>
+                                <TapGestureRecognizer Command="{Binding SpecialOfferingTappedCommand}"/>
                             </Frame.GestureRecognizers>
                             <Grid Padding="20">
                                 <StackLayout Spacing="5" VerticalOptions="Center">
@@ -62,7 +62,7 @@
                         <Label Grid.Column="0" Text="Your Preferred" FontSize="20" FontAttributes="Bold" TextColor="#1A1A1A"/>
                         <Label Grid.Column="1" Text="See All" FontSize="14" TextColor="#EBC656">
                             <Label.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnSeeAllTapped"/>
+                                <TapGestureRecognizer Command="{Binding SeeAllTappedCommand}"/>
                             </Label.GestureRecognizers>
                         </Label>
                     </Grid>
@@ -143,27 +143,28 @@
 
                     <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
                         <StackLayout Orientation="Horizontal" Spacing="10">
+                            <!-- Category buttons with Command Binding (MVVM) -->
                             <Frame Padding="20,10" CornerRadius="20" BackgroundColor="#EBC656" HasShadow="False" x:Name="AllCategoryFrame">
                                 <Frame.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnCategoryTapped" CommandParameter="All"/>
+                                    <TapGestureRecognizer Command="{Binding CategorySelectedCommand}" CommandParameter="All"/>
                                 </Frame.GestureRecognizers>
                                 <Label Text="All" TextColor="White" FontAttributes="Bold" x:Name="AllCategoryLabel"/>
                             </Frame>
                             <Frame Padding="20,10" CornerRadius="20" BackgroundColor="White" BorderColor="#EBC656" HasShadow="False" x:Name="BreadCategoryFrame">
                                 <Frame.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnCategoryTapped" CommandParameter="Bread"/>
+                                    <TapGestureRecognizer Command="{Binding CategorySelectedCommand}" CommandParameter="Bread"/>
                                 </Frame.GestureRecognizers>
                                 <Label Text="Bread" TextColor="#EBC656" FontAttributes="Bold" x:Name="BreadCategoryLabel"/>
                             </Frame>
                             <Frame Padding="20,10" CornerRadius="20" BackgroundColor="White" BorderColor="#EBC656" HasShadow="False" x:Name="CakeCategoryFrame">
                                 <Frame.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnCategoryTapped" CommandParameter="Cake"/>
+                                    <TapGestureRecognizer Command="{Binding CategorySelectedCommand}" CommandParameter="Cake"/>
                                 </Frame.GestureRecognizers>
                                 <Label Text="Cake" TextColor="#EBC656" FontAttributes="Bold" x:Name="CakeCategoryLabel"/>
                             </Frame>
                             <Frame Padding="20,10" CornerRadius="20" BackgroundColor="White" BorderColor="#EBC656" HasShadow="False" x:Name="OthersCategoryFrame">
                                 <Frame.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnCategoryTapped" CommandParameter="Others"/>
+                                    <TapGestureRecognizer Command="{Binding CategorySelectedCommand}" CommandParameter="Others"/>
                                 </Frame.GestureRecognizers>
                                 <Label Text="Others" TextColor="#EBC656" FontAttributes="Bold" x:Name="OthersCategoryLabel"/>
                             </Frame>
@@ -172,7 +173,7 @@
                 </StackLayout>
 
                 <VerticalStackLayout x:Name="CategoryResultsSection" Padding="20,0,20,20" Spacing="10">
-                    <Label x:Name="CategoryResultsTitle" Text="Category Products (Selected: All)" FontSize="18" FontAttributes="Bold" TextColor="#1A1A1A"/>
+                    <Label Text="{Binding CategoryResultsTitle}" FontSize="18" FontAttributes="Bold" TextColor="#1A1A1A"/>
                     <Grid x:Name="CategoryResultsGrid" ColumnDefinitions="*,*,*" ColumnSpacing="15" RowSpacing="15" Margin="0,10,0,0">
                     </Grid>
                 </VerticalStackLayout>
@@ -195,9 +196,8 @@
                     <!-- Cart icon with badge - larger container to prevent clipping -->
                     <Grid Grid.Row="0" HorizontalOptions="Center" WidthRequest="45" HeightRequest="35">
                         <Label Text="🛒" FontSize="24" HorizontalOptions="Center" VerticalOptions="Center" TextColor="#333333"/>
-                        <!-- Red circular badge -->
-                        <Border x:Name="CartBadge"
-                                BackgroundColor="#FF4B4B"
+                        <!-- Red circular badge - Data Binding (MVVM) -->
+                        <Border BackgroundColor="#FF4B4B"
                                 Stroke="Transparent"
                                 StrokeThickness="0"
                                 WidthRequest="20"
@@ -205,12 +205,11 @@
                                 HorizontalOptions="End"
                                 VerticalOptions="Start"
                                 Margin="0,2,2,0"
-                                IsVisible="False">
+                                IsVisible="{Binding IsCartBadgeVisible}">
                             <Border.StrokeShape>
                                 <Ellipse/>
                             </Border.StrokeShape>
-                            <Label x:Name="CartBadgeLabel"
-                                   Text="0"
+                            <Label Text="{Binding CartBadgeText}"
                                    FontSize="11"
                                    FontAttributes="Bold"
                                    TextColor="White"
@@ -220,13 +219,38 @@
                     </Grid>
                     <Label Grid.Row="1" Text="CART" FontSize="10" FontAttributes="Bold" TextColor="#333333" HorizontalTextAlignment="Center"/>
                 </Grid>
-                <StackLayout Grid.Column="2" Spacing="2" HorizontalOptions="Center">
-                    <StackLayout.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnOrdersTapped"/>
-                    </StackLayout.GestureRecognizers>
-                    <Label Text="📋" FontSize="24" HorizontalOptions="Center" TextColor="#333333"/>
-                    <Label Text="ORDERS" FontSize="10" FontAttributes="Bold" TextColor="#333333" HorizontalTextAlignment="Center"/>
-                </StackLayout>
+                <Grid Grid.Column="2" RowDefinitions="Auto, Auto" HorizontalOptions="Center">
+                    <StackLayout Grid.Row="0" Spacing="2" HorizontalOptions="Center">
+                        <StackLayout.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding OrdersTappedCommand}"/>
+                        </StackLayout.GestureRecognizers>
+                        <!-- Orders icon with badge - larger container to prevent clipping -->
+                        <Grid HorizontalOptions="Center" WidthRequest="45" HeightRequest="35">
+                            <Label Text="📋" FontSize="24" HorizontalOptions="Center" VerticalOptions="Center" TextColor="#333333"/>
+                            <!-- Red circular badge - Data Binding (MVVM) -->
+                            <Border BackgroundColor="#FF4B4B"
+                                    Stroke="Transparent"
+                                    StrokeThickness="0"
+                                    WidthRequest="20"
+                                    HeightRequest="20"
+                                    HorizontalOptions="End"
+                                    VerticalOptions="Start"
+                                    Margin="0,2,2,0"
+                                    IsVisible="{Binding IsOrdersBadgeVisible}">
+                                <Border.StrokeShape>
+                                    <Ellipse/>
+                                </Border.StrokeShape>
+                                <Label Text="{Binding OrdersBadgeText}"
+                                       FontSize="11"
+                                       FontAttributes="Bold"
+                                       TextColor="White"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center"/>
+                            </Border>
+                        </Grid>
+                    </StackLayout>
+                    <Label Grid.Row="1" Text="ORDERS" FontSize="10" FontAttributes="Bold" TextColor="#333333" HorizontalTextAlignment="Center"/>
+                </Grid>
                 <StackLayout Grid.Column="3" Spacing="2" HorizontalOptions="Center">
                     <StackLayout.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnAccountTapped"/>
