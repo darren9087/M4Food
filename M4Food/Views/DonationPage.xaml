@@ -58,7 +58,8 @@
                     <Frame BackgroundColor="White" CornerRadius="15" Padding="15,0" HasShadow="False" BorderColor="Transparent" HeightRequest="50">
                         <Grid ColumnDefinitions="30,*">
                             <Label Text="🏢" VerticalOptions="Center" Grid.Column="0"/>
-                            <Entry Placeholder="Store Name" 
+                            <Entry x:Name="StoreNameEntry"
+                                   Placeholder="Store Name" 
                                    PlaceholderColor="#999999"
                                    TextColor="#1A1A1A"
                                    Grid.Column="1"
@@ -69,7 +70,8 @@
                     <Frame BackgroundColor="White" CornerRadius="15" Padding="15,0" HasShadow="False" BorderColor="Transparent" HeightRequest="50">
                         <Grid ColumnDefinitions="30,*">
                             <Label Text="📍" VerticalOptions="Center" Grid.Column="0"/>
-                            <Entry Placeholder="Store Address" 
+                            <Entry x:Name="StoreAddressEntry"
+                                   Placeholder="Store Address" 
                                    PlaceholderColor="#999999"
                                    TextColor="#1A1A1A"
                                    Grid.Column="1"
@@ -80,7 +82,8 @@
                     <Frame BackgroundColor="White" CornerRadius="15" Padding="15,0" HasShadow="False" BorderColor="Transparent" HeightRequest="50">
                         <Grid ColumnDefinitions="30,*">
                             <Label Text="📞" VerticalOptions="Center" Grid.Column="0"/>
-                            <Entry Placeholder="Phone Number" 
+                            <Entry x:Name="PhoneNumberEntry"
+                                   Placeholder="Phone Number" 
                                    Keyboard="Telephone" 
                                    PlaceholderColor="#999999"
                                    TextColor="#1A1A1A"

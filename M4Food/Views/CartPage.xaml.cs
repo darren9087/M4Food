@@ -140,12 +140,12 @@ namespace M4Food.Views
                 ordersPage.AddNewOrder(newOrder); // Add to local list for immediate display
                 await Navigation.PushAsync(ordersPage);
 
-#if ANDROID
-                NotificationHelper.ShowNotification(
-                    "Order Confirmed!",
-                    $"Your order #{newOrder.OrderId} has been placed successfully!"
-                );
-#endif
+//#if ANDROID
+//                NotificationHelper.ShowNotification(
+//                    "Order Confirmed!",
+//                    $"Your order #{newOrder.OrderId} has been placed successfully!"
+//                );
+//#endif
             }
             catch (Exception ex)
             {

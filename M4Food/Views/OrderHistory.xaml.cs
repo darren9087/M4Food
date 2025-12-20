@@ -21,6 +21,8 @@ namespace M4Food.Views
         private List<Order> _allOrders = new List<Order>();
         private readonly IOrderService _orderService;
         private readonly ICloudinaryService? _cloudinaryService;
+        // Map of orderId -> pending picked FileResult (user selected but not yet uploaded)
+        private readonly Dictionary<string, FileResult> _pendingUploads = new Dictionary<string, FileResult>();
 
         public OrdersPage()
         {
@@ -270,27 +272,110 @@ namespace M4Food.Views
                             }
                             else if (action == "Choose from Gallery")
                             {
-                                photo = await MediaPicker.Default.PickPhotoAsync(new MediaPickerOptions
+#if ANDROID
+                                try
                                 {
-                                    Title = "Select a photo of your order"
-                                });
+                                    // Request runtime permission for photos on Android (Android 13+ requires READ_MEDIA_IMAGES)
+                                    var galleryStatus = await Permissions.RequestAsync<Permissions.Photos>();
+                                    System.Diagnostics.Debug.WriteLine($"Gallery permission status: {galleryStatus}");
+                                    if (galleryStatus != PermissionStatus.Granted)
+                                    {
+                                        await DisplayAlert("Permission Required",
+                                            "Permission to access photos is required to select images from gallery. Please enable it in app settings.",
+                                            "OK");
+                                        photo = null;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"Error requesting gallery permission: {ex}");
+                                }
+#endif
+
+                                if (photo == null)
+                                {
+                                    // proceed to pick only if permission was granted (or not required)
+                                    try
+                                    {
+                                        System.Diagnostics.Debug.WriteLine("Starting PickPhotoAsync...");
+                                        await AppendDebugLogAsync("Starting PickPhotoAsync...");
+                                        var pickTask = MediaPicker.Default.PickPhotoAsync(new MediaPickerOptions
+                                        {
+                                            Title = "Select a photo of your order"
+                                        });
+
+                                        // Wait with timeout so UI doesn't appear stuck; we don't cancel the picker, just detect long wait
+                                        var completed = await Task.WhenAny(pickTask, Task.Delay(TimeSpan.FromSeconds(60)));
+                                        if (completed != pickTask)
+                                        {
+                                            System.Diagnostics.Debug.WriteLine("PickPhotoAsync is taking longer than 60s.");
+                                            await AppendDebugLogAsync("PickPhotoAsync timeout (60s)");
+                                            await DisplayAlert("Please Wait", "Gallery picker is taking longer than expected. Please try again.", "OK");
+                                            photo = null;
+                                        }
+                                        else
+                                        {
+                                            photo = await pickTask; // already completed
+                                            System.Diagnostics.Debug.WriteLine("PickPhotoAsync completed.");
+                                            await AppendDebugLogAsync("PickPhotoAsync completed");
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        System.Diagnostics.Debug.WriteLine($"Error during PickPhotoAsync: {ex}");
+                                        await AppendDebugLogAsync($"Error during PickPhotoAsync: {ex}");
+                                        await DisplayAlert("Error", $"Failed to pick photo: {ex.Message}", "OK");
+                                        photo = null;
+                                    }
+                                }
                             }
 
                             if (photo != null)
                             {
-                                // Show loading indicator
-                                await DisplayAlert("Uploading", "Please wait while we upload your photo...", "OK");
+                                // Defer any heavy I/O to a background task to avoid blocking onActivityResult.
+                                // Create the temp path now so we can immediately update UI/state, then perform copy+upload in background.
+                                var tempDir = Path.Combine(FileSystem.CacheDirectory, "order_uploads");
+                                if (!Directory.Exists(tempDir))
+                                    Directory.CreateDirectory(tempDir);
 
-                                // Upload to Cloudinary
-                                using var stream = await photo.OpenReadAsync();
-                                var (url, _) = await _cloudinaryService.UploadImageStreamAsync(
-                                    stream,
-                                    photo.FileName ?? $"order_{orderId}_{DateTime.UtcNow.Ticks}.jpg",
-                                    folder: "m4food/orders/received"
-                                );
-                                
-                                imageUrl = url;
-                                System.Diagnostics.Debug.WriteLine($"Image uploaded successfully: {imageUrl}");
+                                var tempPath = Path.Combine(tempDir, $"order_{orderId}_{Guid.NewGuid()}{Path.GetExtension(photo.FileName)}");
+
+                                // Immediately set local path on the order so UI can show a placeholder/local reference.
+                                var order = _allOrders.FirstOrDefault(o => o.OrderId == orderId);
+                                if (order != null)
+                                {
+                                    order.ReceivedImageLocalPath = tempPath;
+                                }
+
+                                // Defer heavy I/O until user explicitly requests upload.
+                                // Store the FileResult so we can process it later when the user taps Upload.
+                                try
+                                {
+                                    _pendingUploads[orderId] = photo;
+                                    await AppendDebugLogAsync($"Deferred processing for order {orderId}; awaiting user upload.");
+
+                                    // Inform the user quickly (non-blocking UI prompt)
+                                    await MainThread.InvokeOnMainThreadAsync(async () =>
+                                    {
+                                        var uploadNow = await DisplayAlert("Photo Selected",
+                                            "Photo selected. Upload now?",
+                                            "Upload Now",
+                                            "Upload Later");
+
+                                        if (uploadNow)
+                                        {
+                                            // Kick off background processing to avoid blocking UI thread.
+                                            _ = Task.Run(async () =>
+                                            {
+                                                await ProcessPickedPhotoAsync(photo, tempPath, orderId);
+                                            });
+                                        }
+                                    });
+                                }
+                                catch (Exception ex)
+                                {
+                                    await AppendDebugLogAsync($"Failed to defer processing picked photo for order {orderId}: {ex}");
+                                }
                             }
                         }
                     }
@@ -398,6 +483,21 @@ namespace M4Food.Views
             }
         }
 
+        private async Task AppendDebugLogAsync(string message)
+        {
+            try
+            {
+                var logDir = FileSystem.AppDataDirectory;
+                var logPath = Path.Combine(logDir, "photo_debug.log");
+                var entry = $"[{DateTime.UtcNow:O}] {message}{Environment.NewLine}";
+                await File.AppendAllTextAsync(logPath, entry);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to write debug log: {ex}");
+            }
+        }
+
         private async void OnImageTapped(object sender, EventArgs e)
         {
             if (sender is Image image && image.GestureRecognizers.FirstOrDefault() is TapGestureRecognizer tap && 
@@ -409,6 +509,184 @@ namespace M4Food.Views
                     // Show full screen image view
                     await DisplayAlert("Order Image", $"Order #{orderId} received image", "OK");
                 }
+            }
+        }
+
+        /// <summary>
+        /// Process a previously-picked photo: copy to temp and upload (safe copy + retry).
+        /// This runs on a background thread when invoked.
+        /// </summary>
+        private async Task ProcessPickedPhotoAsync(FileResult photo, string tempPath, string orderId)
+        {
+            try
+            {
+                await AppendDebugLogAsync($"Background: start processing picked photo for order {orderId}");
+
+                // First attempt: try to upload directly from the picker stream (no temp file).
+                if (_cloudinaryService != null)
+                {
+                    try
+                    {
+                        await using var directStream = await photo.OpenReadAsync();
+                        try
+                        {
+                            var fileName = Path.GetFileName(photo.FileName ?? tempPath);
+                            var (url, _) = await _cloudinaryService.UploadImageStreamAsync(
+                                directStream,
+                                fileName,
+                                folder: "m4food/orders/received");
+
+                            await AppendDebugLogAsync($"Background: direct stream upload succeeded: {url}");
+
+                            // Update local model on main thread
+                            await MainThread.InvokeOnMainThreadAsync(() =>
+                            {
+                                var updOrder = _allOrders.FirstOrDefault(o => o.OrderId == orderId);
+                                if (updOrder != null)
+                                {
+                                    updOrder.ReceivedImageUrl = url;
+                                    // Keep local path as-is (may be used for placeholder), do not overwrite
+                                }
+                            });
+
+                            // Try to update order status again with image details (best-effort)
+                            try
+                            {
+                                await _orderService.UpdateOrderStatusAsync(orderId, "Completed", url, tempPath);
+                                await AppendDebugLogAsync($"Background: updated order {orderId} with uploaded image (direct).");
+                            }
+                            catch (Exception exUpd)
+                            {
+                                await AppendDebugLogAsync($"Background: failed to update order after direct upload: {exUpd}");
+                            }
+
+                            // Remove pending entry if exists
+                            try { if (_pendingUploads.ContainsKey(orderId)) _pendingUploads.Remove(orderId); } catch { }
+                            return;
+                        }
+                        catch (Exception exDirectUpload)
+                        {
+                            // Log and fall through to file-based fallback
+                            await AppendDebugLogAsync($"Background: direct stream upload failed, will fallback to temp file: {exDirectUpload}");
+                        }
+                    }
+                    catch (Exception exOpen)
+                    {
+                        // Could not open stream; log and fall back to file-based path
+                        await AppendDebugLogAsync($"Background: failed to open picker stream for direct upload: {exOpen}");
+                    }
+                }
+
+                // Fallback: copy the returned content stream to a temp file using async I/O and explicit flush.
+                try
+                {
+                    await using (var sourceStream = await photo.OpenReadAsync())
+                    {
+                        await using (var destStream = new FileStream(
+                            tempPath,
+                            FileMode.Create,
+                            FileAccess.Write,
+                            FileShare.ReadWrite,
+                            bufferSize: 81920,
+                            useAsync: true))
+                        {
+                            await sourceStream.CopyToAsync(destStream);
+                            await destStream.FlushAsync();
+                        }
+                    }
+
+                    await AppendDebugLogAsync($"Background: copied photo to temp file: {tempPath}");
+                }
+                catch (Exception exCopy)
+                {
+                    await AppendDebugLogAsync($"Background: failed to copy picker stream to temp file: {exCopy}");
+                    // If copy fails, give up for now.
+                    return;
+                }
+
+                if (_cloudinaryService != null)
+                {
+                    try
+                    {
+                        // Attempt to open for read with retries to avoid transient locks.
+                        const int maxAttempts = 3;
+                        Exception? lastEx = null;
+                        for (int attempt = 1; attempt <= maxAttempts; attempt++)
+                        {
+                            try
+                            {
+                                await using var uploadStream = new FileStream(
+                                    tempPath,
+                                    FileMode.Open,
+                                    FileAccess.Read,
+                                    FileShare.ReadWrite,
+                                    bufferSize: 81920,
+                                    useAsync: true);
+
+                                var (url, _) = await _cloudinaryService.UploadImageStreamAsync(
+                                    uploadStream,
+                                    Path.GetFileName(tempPath),
+                                    folder: "m4food/orders/received");
+
+                                // Update imageUrl and local cache, then persist the updated order status.
+                                await AppendDebugLogAsync($"Background: image uploaded (fallback): {url}");
+
+                                // Update local model on main thread
+                                await MainThread.InvokeOnMainThreadAsync(() =>
+                                {
+                                    var updOrder = _allOrders.FirstOrDefault(o => o.OrderId == orderId);
+                                    if (updOrder != null)
+                                    {
+                                        updOrder.ReceivedImageUrl = url;
+                                        updOrder.ReceivedImageLocalPath = tempPath;
+                                    }
+                                });
+
+                                // Try to update order status again with image details (best-effort)
+                                try
+                                {
+                                    await _orderService.UpdateOrderStatusAsync(orderId, "Completed", url, tempPath);
+                                    await AppendDebugLogAsync($"Background: updated order {orderId} with uploaded image (fallback).");
+                                }
+                                catch (Exception exUpd)
+                                {
+                                    await AppendDebugLogAsync($"Background: failed to update order after upload: {exUpd}");
+                                }
+
+                                lastEx = null;
+                                break;
+                            }
+                            catch (IOException ioEx)
+                            {
+                                lastEx = ioEx;
+                                await Task.Delay(200);
+                            }
+                        }
+
+                        if (lastEx != null)
+                        {
+                            await AppendDebugLogAsync($"Background: upload failed after retries (fallback): {lastEx}");
+                        }
+                    }
+                    catch (Exception exUpload)
+                    {
+                        await AppendDebugLogAsync($"Background: upload failed (fallback): {exUpload}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await AppendDebugLogAsync($"Background: failed processing picked photo for order {orderId}: {ex}");
+            }
+            finally
+            {
+                // Remove pending entry if exists
+                try
+                {
+                    if (_pendingUploads.ContainsKey(orderId))
+                        _pendingUploads.Remove(orderId);
+                }
+                catch { }
             }
         }
 
@@ -461,6 +739,119 @@ namespace M4Food.Views
                 {
                     System.Diagnostics.Debug.WriteLine($"Error cancelling order: {ex.Message}");
                     await DisplayAlert("Error", "Failed to cancel collection. Please try again.", "OK");
+                }
+            }
+        }
+
+        private async void OnUploadPendingClicked(object sender, EventArgs e)
+        {
+            if (sender is Button button && button.CommandParameter is string orderId)
+            {
+                try
+                {
+                    var order = _allOrders.FirstOrDefault(o => o.OrderId == orderId);
+                    if (order == null)
+                    {
+                        await DisplayAlert("Upload", "Order not found.", "OK");
+                        return;
+                    }
+
+                    // If we have a pending FileResult saved, use that; otherwise try to upload the local temp file directly.
+                    if (_pendingUploads.TryGetValue(orderId, out var pendingPhoto))
+                    {
+                        var tempDir = Path.Combine(FileSystem.CacheDirectory, "order_uploads");
+                        var tempPath = order.ReceivedImageLocalPath ?? Path.Combine(tempDir, $"order_{orderId}_{Guid.NewGuid()}.jpg");
+                        // Kick off background upload
+                        _ = Task.Run(async () => await ProcessPickedPhotoAsync(pendingPhoto, tempPath, orderId));
+                        await DisplayAlert("Upload", "Upload started in background.", "OK");
+                        return;
+                    }
+
+                    if (!string.IsNullOrEmpty(order.ReceivedImageLocalPath) && File.Exists(order.ReceivedImageLocalPath))
+                    {
+                        // Upload existing local file in background (use same retry logic)
+                        var tempPath = order.ReceivedImageLocalPath;
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await AppendDebugLogAsync($"Manual upload: start for order {orderId}");
+
+                                if (_cloudinaryService != null)
+                                {
+                                    const int maxAttempts = 3;
+                                    Exception? lastEx = null;
+                                    for (int attempt = 1; attempt <= maxAttempts; attempt++)
+                                    {
+                                        try
+                                        {
+                                            await using var uploadStream = new FileStream(
+                                                tempPath,
+                                                FileMode.Open,
+                                                FileAccess.Read,
+                                                FileShare.ReadWrite,
+                                                bufferSize: 81920,
+                                                useAsync: true);
+
+                                            var (url, _) = await _cloudinaryService.UploadImageStreamAsync(
+                                                uploadStream,
+                                                Path.GetFileName(tempPath),
+                                                folder: "m4food/orders/received");
+
+                                            await AppendDebugLogAsync($"Manual upload: image uploaded: {url}");
+
+                                            await MainThread.InvokeOnMainThreadAsync(() =>
+                                            {
+                                                var updOrder = _allOrders.FirstOrDefault(o => o.OrderId == orderId);
+                                                if (updOrder != null)
+                                                {
+                                                    updOrder.ReceivedImageUrl = url;
+                                                    updOrder.ReceivedImageLocalPath = tempPath;
+                                                }
+                                            });
+
+                                            try
+                                            {
+                                                await _orderService.UpdateOrderStatusAsync(orderId, "Completed", url, tempPath);
+                                                await AppendDebugLogAsync($"Manual upload: updated order {orderId} with uploaded image.");
+                                            }
+                                            catch (Exception exUpd)
+                                            {
+                                                await AppendDebugLogAsync($"Manual upload: failed to update order after upload: {exUpd}");
+                                            }
+
+                                            lastEx = null;
+                                            break;
+                                        }
+                                        catch (IOException ioEx)
+                                        {
+                                            lastEx = ioEx;
+                                            await Task.Delay(200);
+                                        }
+                                    }
+
+                                    if (lastEx != null)
+                                    {
+                                        await AppendDebugLogAsync($"Manual upload failed after retries: {lastEx}");
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                await AppendDebugLogAsync($"Manual upload error for order {orderId}: {ex}");
+                            }
+                        });
+
+                        await DisplayAlert("Upload", "Upload started in background.", "OK");
+                        return;
+                    }
+
+                    await DisplayAlert("Upload", "No pending photo to upload for this order.", "OK");
+                }
+                catch (Exception ex)
+                {
+                    await DisplayAlert("Upload Error", $"Failed to start upload: {ex.Message}", "OK");
+                    await AppendDebugLogAsync($"OnUploadPendingClicked error: {ex}");
                 }
             }
         }

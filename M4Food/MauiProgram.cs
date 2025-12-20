@@ -70,7 +70,18 @@ public static class MauiProgram
 
                 android.OnActivityResult((activity, requestCode, resultCode, data) =>
                 {
-                    _ = FirebaseAuthGoogleImplementation.HandleActivityResultAsync(requestCode, resultCode, data);
+                    // Run plugin handler safely on a background task and swallow/log exceptions
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await FirebaseAuthGoogleImplementation.HandleActivityResultAsync(requestCode, resultCode, data);
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"FirebaseAuthGoogleImplementation.HandleActivityResultAsync failed: {ex}");
+                        }
+                    });
                 });
             });
         });

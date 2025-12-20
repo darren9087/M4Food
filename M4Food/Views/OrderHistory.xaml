@@ -189,6 +189,18 @@
                                             HorizontalOptions="Start"
                                             Clicked="OnCancelOrderClicked"
                                             CommandParameter="{Binding OrderId}"/>
+                                    <Button Text="⬆ Upload Photo"
+                                            BackgroundColor="#2196F3"
+                                            TextColor="White"
+                                            FontSize="13"
+                                            FontAttributes="Bold"
+                                            CornerRadius="20"
+                                            HeightRequest="40"
+                                            Padding="15,0"
+                                            HorizontalOptions="Start"
+                                            Clicked="OnUploadPendingClicked"
+                                            CommandParameter="{Binding OrderId}"
+                                            IsVisible="{Binding ReceivedImageLocalPath, Converter={StaticResource IsStringNotNullOrEmptyConverter}}"/>
                                 </StackLayout>
                             </Grid>
                         </Frame>
