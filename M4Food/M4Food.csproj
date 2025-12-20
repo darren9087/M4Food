@@ -51,6 +51,8 @@
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Maui.Controls.Maps" Version="10.0.20" />
+		<PackageReference Include="Microsoft.Maui.Essentials" Version="10.0.20" />
+		<PackageReference Include="Microsoft.Maui.Maps" Version="10.0.20" />
 		
 		<!-- Firebase packages -->
 		<PackageReference Include="Plugin.Firebase" Version="3.1.1" />
@@ -94,6 +96,9 @@
 		<Message Text="Removed ktx jar files from D8 inputs" Importance="high" />
 	</Target>
 	<ItemGroup>
+	  <Compile Update="Views\MapPage.xaml.cs">
+	    <DependentUpon>MapPage.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\OrderHistory.xaml.cs">
 	    <DependentUpon>OrderHistory.xaml</DependentUpon>
 	  </Compile>
@@ -116,6 +121,9 @@
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Views\MainPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Views\MapPage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Views\OrderHistory.xaml">

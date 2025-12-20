@@ -12,4 +12,8 @@
         ContentTemplate="{DataTemplate views:MainPage}"
         Route="MainPage" />
 
+    <ShellContent
+        Route="map"
+        ContentTemplate="{DataTemplate views:MapPage}" />
+
 </Shell>

@@ -1,9 +1,16 @@
-﻿namespace M4Food;
+﻿using M4Food.Views;
 
-public partial class AppShell : Shell
+namespace M4Food
 {
-    public AppShell()
+    // Ensure the class is declared as partial and matches the x:Class in AppShell.xaml
+    public partial class AppShell : Shell
     {
-        InitializeComponent();
+        public AppShell()
+        {
+            InitializeComponent();
+
+            Routing.RegisterRoute(nameof(MapPage), typeof(MapPage));
+        }
     }
 }
+
