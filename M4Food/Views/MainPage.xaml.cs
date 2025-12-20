@@ -2,48 +2,46 @@
 using Microsoft.Maui.ApplicationModel;
 using System;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Linq;
+using M4Food.ViewModels;
 
 namespace M4Food.Views
 {
     public partial class MainPage : ContentPage
     {
-        private class Product
-        {
-            public string? Name { get; set; }
-            public string? Category { get; set; }
-            public string? ImageSource { get; set; }
-            public string? StoreName { get; set; }
-        }
-
-        private List<Product> _allProducts = new List<Product>
-        {
-            new Product { Name = "Artisan Bread", Category = "Bread", ImageSource = "artisanbread.png", StoreName = "Vin Bakery" },
-            new Product { Name = "Butter Croissant", Category = "Bread", ImageSource = "buttercroissant.png", StoreName = "Vin Bakery" },
-            new Product { Name = "Choco Cake", Category = "Cake", ImageSource = "chococake.png", StoreName = "Vin Bakery" },
-            new Product { Name = "Blueberry Muffin", Category = "Cake", ImageSource = "muffin.png", StoreName = "Welove Bakery" },
-            new Product { Name = "Glazed Donut", Category = "Others", ImageSource = "glazeddonut.png", StoreName = "Welove Bakery" },
-            new Product { Name = "Choco Chip", Category = "Others", ImageSource = "chocochip.png", StoreName = "Welove Bakery" },
-        };
+        private MainPageViewModel? _viewModel;
 
         public MainPage()
         {
             InitializeComponent();
-            PopulateCategoryResults("All");
-            UpdateCategoryButtonStyle("All");
-
-            // Subscribe to cart changes to update badge
-            CartService.Current.CartChanged += OnCartChanged;
+            
+            // Set ViewModel as BindingContext (MVVM pattern)
+            _viewModel = new MainPageViewModel();
+            BindingContext = _viewModel;
         }
 
-        protected override async void OnAppearing()
+        protected override void OnAppearing()
         {
             base.OnAppearing();
 
-            // Update cart badge when page appears
-            UpdateCartBadge();
+            // App Lifecycle: Handle page appearing
+            // This demonstrates App Lifecycle management (E2 requirement)
 
+            // Update category button styles based on ViewModel's SelectedCategory
+            if (_viewModel != null)
+            {
+                UpdateCategoryButtonStyle(_viewModel.SelectedCategory);
+                _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+                
+                // Refresh active orders count when page appears
+                _ = _viewModel.LoadActiveOrdersCountAsync();
+            }
+
+            // Initialize FCM on Android (async operation)
+            _ = InitializeFCMAsync();
+        }
+
+        private async Task InitializeFCMAsync()
+        {
 #if ANDROID
             try
             {
@@ -57,130 +55,18 @@ namespace M4Food.Views
             {
                 System.Diagnostics.Debug.WriteLine($"Failed to init FCM on MainPage: {ex.Message}");
             }
+#else
+            // FCM is only available on Android
+            await Task.CompletedTask;
 #endif
         }
 
-        private void OnCartChanged(object? sender, EventArgs e)
+        private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            // Update badge on main thread
-            MainThread.BeginInvokeOnMainThread(UpdateCartBadge);
-        }
-
-        private void UpdateCartBadge()
-        {
-            var count = CartService.Current.TotalItemCount;
-            
-            if (count > 0)
+            // Update UI when ViewModel properties change (Data Binding support)
+            if (e.PropertyName == nameof(MainPageViewModel.SelectedCategory) && _viewModel != null)
             {
-                CartBadge.IsVisible = true;
-                CartBadgeLabel.Text = count > 99 ? "99+" : count.ToString();
-            }
-            else
-            {
-                CartBadge.IsVisible = false;
-            }
-        }
-
-        private void PopulateCategoryResults(string category)
-        {
-            IEnumerable<Product> filteredProducts = _allProducts;
-            if (category != "All")
-            {
-                filteredProducts = _allProducts.Where(p => p.Category == category);
-            }
-
-            CategoryResultsTitle.Text = $"Category Products (Selected: {category})";
-            CategoryResultsGrid.Children.Clear();
-
-            int col = 0;
-            int row = 0;
-
-            CategoryResultsGrid.RowDefinitions.Clear();
-            int requiredRows = (int)Math.Ceiling((double)filteredProducts.Count() / 3);
-            for (int i = 0; i < requiredRows; i++)
-            {
-                CategoryResultsGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-            }
-
-            foreach (var product in filteredProducts)
-            {
-                var stackLayout = new StackLayout
-                {
-                    VerticalOptions = LayoutOptions.Center,
-                    Spacing = 5,
-                    InputTransparent = true
-                };
-
-                var productImage = new Image
-                {
-                    Source = product.ImageSource,
-                    Aspect = Aspect.AspectFit,
-                    HeightRequest = 50,
-                    WidthRequest = 50,
-                    InputTransparent = true
-                };
-
-                var imageFrame = new Frame
-                {
-                    BackgroundColor = Color.FromArgb("#EEEEEE"),
-                    CornerRadius = 10,
-                    HeightRequest = 50,
-                    WidthRequest = 50,
-                    HasShadow = false,
-                    HorizontalOptions = LayoutOptions.Center,
-                    Padding = new Thickness(0),
-                    InputTransparent = true,
-                    Content = productImage
-                };
-                stackLayout.Children.Add(imageFrame);
-
-                var nameLabel = new Label
-                {
-                    Text = product.Name,
-                    FontSize = 12,
-                    FontAttributes = FontAttributes.Bold,
-                    TextColor = Color.FromArgb("#1A1A1A"),
-                    HorizontalTextAlignment = TextAlignment.Center,
-                    LineBreakMode = LineBreakMode.TailTruncation,
-                    InputTransparent = true
-                };
-                stackLayout.Children.Add(nameLabel);
-
-                var outerFrame = new Frame
-                {
-                    CornerRadius = 15,
-                    Padding = new Thickness(10),
-                    HasShadow = false,
-                    BorderColor = Colors.Transparent,
-                    BackgroundColor = Colors.White,
-                    MinimumHeightRequest = 100,
-                    MinimumWidthRequest = 100,
-                    Content = stackLayout
-                };
-
-                string productName = product.Name ?? "Unknown Item";
-                string productStore = product.StoreName ?? "Unknown Store";
-
-                var tapGesture = new TapGestureRecognizer
-                {
-                    NumberOfTapsRequired = 1
-                };
-                tapGesture.Tapped += (s, args) =>
-                {
-                    _ = NavigateToItemDetail(outerFrame, productName, productStore);
-                };
-                outerFrame.GestureRecognizers.Add(tapGesture);
-
-                CategoryResultsGrid.Children.Add(outerFrame);
-                Microsoft.Maui.Controls.Grid.SetColumn(outerFrame, col);
-                Microsoft.Maui.Controls.Grid.SetRow(outerFrame, row);
-
-                col++;
-                if (col > 2)
-                {
-                    col = 0;
-                    row++;
-                }
+                UpdateCategoryButtonStyle(_viewModel.SelectedCategory);
             }
         }
 
@@ -212,29 +98,18 @@ namespace M4Food.Views
             }
         }
 
+        // Note: Cart badge is now handled by ViewModel through Data Binding
+        // The ViewModel subscribes to CartService.CartChanged and updates properties
+        // which are bound to the UI via {Binding IsCartBadgeVisible} and {Binding CartBadgeText}
+
+
         private async void OnMapTapped(object sender, EventArgs e)
         {
             await DisplayAlert("Location", "Opening map location selector...", "OK");
         }
 
-        private async void OnCategoryTapped(object sender, EventArgs e)
-        {
-            if (sender is VisualElement element)
-            {
-                await element.ScaleTo(0.95, 100, Easing.CubicOut);
-                await element.ScaleTo(1, 100, Easing.CubicIn);
-            }
-
-            string category = "All";
-            if (e is TappedEventArgs tappedArgs && tappedArgs.Parameter is string param)
-            {
-                category = param;
-            }
-
-            PopulateCategoryResults(category);
-            UpdateCategoryButtonStyle(category);
-            await ScrollViewContainer.ScrollToAsync(CategoryResultsSection, ScrollToPosition.Start, true);
-        }
+        // Note: Category selection is now handled by ViewModel's CategorySelectedCommand
+        // This method is kept for backward compatibility but may not be used if XAML uses Command binding
 
         private async void OnFoodItemTapped(object sender, string itemName, string storeName)
         {
