@@ -25,11 +25,11 @@ public interface IOrderService
     /// <summary>
     /// Updates the status of an order.
     /// </summary>
-    Task<bool> UpdateOrderStatusAsync(string orderId, string newStatus);
+    Task<bool> UpdateOrderStatusAsync(string orderId, string newStatus, string? receivedImageUrl = null, string? receivedImageLocalPath = null, string? cancelReason = null);
 
     /// <summary>
     /// Cancels an order (sets status to "Cancelled").
     /// </summary>
-    Task<bool> CancelOrderAsync(string orderId);
+    Task<bool> CancelOrderAsync(string orderId, string? cancelReason = null);
 }
 

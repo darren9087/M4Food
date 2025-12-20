@@ -268,10 +268,10 @@ public class OrderService : IOrderService
         }
     }
 
-    public async Task<bool> UpdateOrderStatusAsync(string orderId, string newStatus)
+    public async Task<bool> UpdateOrderStatusAsync(string orderId, string newStatus, string? receivedImageUrl = null, string? receivedImageLocalPath = null, string? cancelReason = null)
     {
         // 1. Update local cache first
-        await _localCacheService.UpdateOrderStatusAsync(orderId, newStatus);
+        await _localCacheService.UpdateOrderStatusAsync(orderId, newStatus, receivedImageUrl, receivedImageLocalPath, cancelReason);
         System.Diagnostics.Debug.WriteLine($"Order {orderId} status updated to {newStatus} in local cache");
 
         // 2. Try to sync to Firebase
@@ -285,7 +285,7 @@ public class OrderService : IOrderService
             if (string.IsNullOrEmpty(idToken))
                 return true;
 
-            var updateData = new { status = newStatus };
+            var updateData = new { status = newStatus, receivedImageUrl = receivedImageUrl, cancelReason = cancelReason };
             var response = await _httpClient.PatchAsync(
                 $"users/{userId}/orders/{orderId}.json?auth={idToken}",
                 JsonContent.Create(updateData, options: JsonOptions));
@@ -305,9 +305,9 @@ public class OrderService : IOrderService
         }
     }
 
-    public async Task<bool> CancelOrderAsync(string orderId)
+    public async Task<bool> CancelOrderAsync(string orderId, string? cancelReason = null)
     {
-        return await UpdateOrderStatusAsync(orderId, "Cancelled");
+        return await UpdateOrderStatusAsync(orderId, "Cancelled", null, null, cancelReason);
     }
 
     #region Mapping Helpers
@@ -319,6 +319,9 @@ public class OrderService : IOrderService
             OrderId = order.OrderId,
             OrderDate = order.OrderDate,
             Status = order.Status,
+            ReceivedImageUrl = order.ReceivedImageUrl,
+            ReceivedImageLocalPath = order.ReceivedImageLocalPath,
+            CancelReason = order.CancelReason,
             
             Items = order.Items?.Select(i => new OrderItemCacheDto
             {
@@ -339,6 +342,9 @@ public class OrderService : IOrderService
             OrderId = dto.OrderId,
             OrderDate = dto.OrderDate,
             Status = dto.Status,
+            ReceivedImageUrl = dto.ReceivedImageUrl,
+            ReceivedImageLocalPath = dto.ReceivedImageLocalPath,
+            CancelReason = dto.CancelReason,
             
             Items = new System.Collections.ObjectModel.ObservableCollection<OrderItem>(
                 dto.Items?.Select(i => new OrderItem
@@ -358,6 +364,9 @@ public class OrderService : IOrderService
             OrderId = dto.OrderId,
             OrderDate = dto.OrderDate,
             Status = dto.Status,
+            ReceivedImageUrl = dto.ReceivedImageUrl,
+            CancelReason = dto.CancelReason,
+            // Note: LocalPath is not stored in Firebase, only in local cache
             
             Items = new System.Collections.ObjectModel.ObservableCollection<OrderItem>(
                 dto.Items?.Select(i => new OrderItem
@@ -377,6 +386,8 @@ public class OrderService : IOrderService
             OrderId = order.OrderId,
             OrderDate = order.OrderDate,
             Status = order.Status,
+            ReceivedImageUrl = order.ReceivedImageUrl,
+            CancelReason = order.CancelReason,
            
             Items = order.Items?.Select(i => new OrderItemDto
             {
@@ -399,6 +410,8 @@ internal class OrderDto
     public string OrderId { get; set; } = string.Empty;
     public DateTime OrderDate { get; set; }
     public string Status { get; set; } = string.Empty;
+    public string? ReceivedImageUrl { get; set; }
+    public string? CancelReason { get; set; }
     
     public List<OrderItemDto>? Items { get; set; }
 }

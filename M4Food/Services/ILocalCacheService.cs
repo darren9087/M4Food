@@ -35,12 +35,17 @@ public interface ILocalCacheService
     Task<UserProfileDto?> GetUserProfileAsync(string userId);
     Task DeleteUserProfileAsync(string userId);
 
+    // Store registration related methods (for offline access)
+    Task SaveStoreRegistrationAsync(StoreRegistrationDto registration);
+    Task<StoreRegistrationDto?> GetStoreRegistrationAsync(string userId);
+    Task DeleteStoreRegistrationAsync(string userId);
+
     // Order related methods for offline access
     Task SaveOrderAsync(string userId, OrderCacheDto order);
     Task SaveOrdersAsync(string userId, IEnumerable<OrderCacheDto> orders);
     Task<OrderCacheDto?> GetOrderAsync(string orderId);
     Task<IEnumerable<OrderCacheDto>> GetOrdersByUserAsync(string userId);
-    Task UpdateOrderStatusAsync(string orderId, string newStatus);
+    Task UpdateOrderStatusAsync(string orderId, string newStatus, string? receivedImageUrl = null, string? receivedImageLocalPath = null, string? cancelReason = null);
     Task DeleteOrderAsync(string orderId);
     Task<IEnumerable<OrderCacheDto>> GetUnsyncedOrdersAsync(string userId);
     Task MarkOrderSyncedAsync(string orderId);

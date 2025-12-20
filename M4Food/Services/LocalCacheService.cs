@@ -37,6 +37,7 @@ public class LocalCacheService : ILocalCacheService
         await db.CreateTableAsync<RouteEntity>();
         await db.CreateTableAsync<StoreImageEntity>();
         await db.CreateTableAsync<UserProfileEntity>();
+        await db.CreateTableAsync<StoreRegistrationEntity>();
         await db.CreateTableAsync<OrderEntity>();
     }
 
@@ -374,6 +375,60 @@ public class LocalCacheService : ILocalCacheService
 
     #endregion
 
+    #region Store Registration Methods
+
+    public async Task SaveStoreRegistrationAsync(StoreRegistrationDto registration)
+    {
+        var db = await GetDatabaseAsync();
+        var entity = new StoreRegistrationEntity
+        {
+            Id = registration.Id,
+            StoreName = registration.StoreName,
+            StoreAddress = registration.StoreAddress,
+            PhoneNumber = registration.PhoneNumber,
+            StoreImageUrl = registration.StoreImageUrl,
+            StoreImageLocalPath = registration.StoreImageLocalPath,
+            StoreImagePublicId = registration.StoreImagePublicId,
+            CreatedAt = registration.CreatedAt == default ? DateTime.UtcNow : registration.CreatedAt,
+            UpdatedAt = DateTime.UtcNow,
+            LastSyncedAt = registration.LastSyncedAt
+        };
+
+        await db.InsertOrReplaceAsync(entity);
+    }
+
+    public async Task<StoreRegistrationDto?> GetStoreRegistrationAsync(string userId)
+    {
+        var db = await GetDatabaseAsync();
+        var entity = await db.Table<StoreRegistrationEntity>()
+            .FirstOrDefaultAsync(r => r.Id == userId);
+
+        if (entity == null)
+            return null;
+
+        return new StoreRegistrationDto
+        {
+            Id = entity.Id,
+            StoreName = entity.StoreName,
+            StoreAddress = entity.StoreAddress,
+            PhoneNumber = entity.PhoneNumber,
+            StoreImageUrl = entity.StoreImageUrl,
+            StoreImageLocalPath = entity.StoreImageLocalPath,
+            StoreImagePublicId = entity.StoreImagePublicId,
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt,
+            LastSyncedAt = entity.LastSyncedAt
+        };
+    }
+
+    public async Task DeleteStoreRegistrationAsync(string userId)
+    {
+        var db = await GetDatabaseAsync();
+        await db.DeleteAsync<StoreRegistrationEntity>(userId);
+    }
+
+    #endregion
+
     #region Order Methods
 
     public async Task SaveOrderAsync(string userId, OrderCacheDto order)
@@ -386,6 +441,9 @@ public class LocalCacheService : ILocalCacheService
             OrderDate = order.OrderDate,
             Status = order.Status,
             TotalPrice = order.TotalPrice,
+            ReceivedImageUrl = order.ReceivedImageUrl,
+            ReceivedImageLocalPath = order.ReceivedImageLocalPath,
+            CancelReason = order.CancelReason,
             ItemsJson = JsonSerializer.Serialize(order.Items),
             CreatedAt = order.CreatedAt == default ? DateTime.UtcNow : order.CreatedAt,
             UpdatedAt = DateTime.UtcNow,
@@ -428,7 +486,7 @@ public class LocalCacheService : ILocalCacheService
         return entities.Select(MapToOrderCacheDto);
     }
 
-    public async Task UpdateOrderStatusAsync(string orderId, string newStatus)
+    public async Task UpdateOrderStatusAsync(string orderId, string newStatus, string? receivedImageUrl = null, string? receivedImageLocalPath = null, string? cancelReason = null)
     {
         var db = await GetDatabaseAsync();
         var entity = await db.Table<OrderEntity>()
@@ -437,6 +495,18 @@ public class LocalCacheService : ILocalCacheService
         if (entity != null)
         {
             entity.Status = newStatus;
+            if (!string.IsNullOrEmpty(receivedImageUrl))
+            {
+                entity.ReceivedImageUrl = receivedImageUrl;
+            }
+            if (!string.IsNullOrEmpty(receivedImageLocalPath))
+            {
+                entity.ReceivedImageLocalPath = receivedImageLocalPath;
+            }
+            if (!string.IsNullOrEmpty(cancelReason))
+            {
+                entity.CancelReason = cancelReason;
+            }
             entity.UpdatedAt = DateTime.UtcNow;
             entity.NeedsSync = true; // Mark as needing sync
             await db.UpdateAsync(entity);
@@ -498,6 +568,9 @@ public class LocalCacheService : ILocalCacheService
             OrderDate = entity.OrderDate,
             Status = entity.Status,
             TotalPrice = entity.TotalPrice,
+            ReceivedImageUrl = entity.ReceivedImageUrl,
+            ReceivedImageLocalPath = entity.ReceivedImageLocalPath,
+            CancelReason = entity.CancelReason,
             Items = items,
             CreatedAt = entity.CreatedAt,
             UpdatedAt = entity.UpdatedAt,
