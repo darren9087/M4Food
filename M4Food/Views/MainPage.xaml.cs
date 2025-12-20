@@ -1,6 +1,5 @@
 ﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Devices.Sensors;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -212,53 +211,11 @@ namespace M4Food.Views
                 }
             }
         }
+
         private async void OnMapTapped(object sender, EventArgs e)
         {
-            try
-            {
-                // Request location permission
-                var status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
-                if (status != PermissionStatus.Granted)
-                {
-                    await DisplayAlert(
-                        "Permission Required",
-                        "Location permission is required to open maps.",
-                        "OK");
-                    return;
-                }
-
-                // Get current location
-                var location = await Geolocation.GetLastKnownLocationAsync();
-
-                if (location == null)
-                {
-                    location = await Geolocation.GetLocationAsync(
-                        new GeolocationRequest(GeolocationAccuracy.Medium));
-                }
-
-                if (location == null)
-                {
-                    await DisplayAlert("Error", "Unable to get current location.", "OK");
-                    return;
-                }
-
-                double latitude = location.Latitude;
-                double longitude = location.Longitude;
-
-                // Google Maps URI (opens Google Maps app)
-                string mapsUrl = $"https://www.google.com/maps?q={latitude},{longitude}";
-
-                await Launcher.OpenAsync(new Uri(mapsUrl));
-            }
-            catch (Exception ex)
-            {
-                await DisplayAlert("Error", ex.Message, "OK");
-            }
+            await DisplayAlert("Location", "Opening map location selector...", "OK");
         }
-
-
-
-
 
         private async void OnCategoryTapped(object sender, EventArgs e)
         {
