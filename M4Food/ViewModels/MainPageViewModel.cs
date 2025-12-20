@@ -280,23 +280,14 @@ namespace M4Food.ViewModels
         {
             try
             {
-                var request = new GeolocationRequest(GeolocationAccuracy.Medium);
-                var location = await Geolocation.Default.GetLocationAsync(request);
+               
+                string bakery1 = "WELOVE BAKERY UNICITY";
+                string bakery2 = "Vin Bakery";
 
-                if (location == null)
-                {
-                    await Application.Current.MainPage.DisplayAlert(
-                        "Location Error",
-                        "Unable to retrieve your current location.",
-                        "OK");
-                    return;
-                }
-
-                double latitude = location.Latitude;
-                double longitude = location.Longitude;
+                string searchQuery = $"{bakery1} OR {bakery2}";
 
                 string googleMapsUrl =
-                    $"https://www.google.com/maps/search/?api=1&query={latitude},{longitude}";
+                    $"https://www.google.com/maps/search/?api=1&query={Uri.EscapeDataString(searchQuery)}";
 
                 await Launcher.Default.OpenAsync(googleMapsUrl);
             }
@@ -308,6 +299,7 @@ namespace M4Food.ViewModels
                     "OK");
             }
         }
+
 
 
         private async void OnFreeDeliveryTapped()
