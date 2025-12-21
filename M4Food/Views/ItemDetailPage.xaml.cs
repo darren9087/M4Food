@@ -132,13 +132,31 @@ namespace M4Food.Views
                 return;
             }
 
-            for (int i = 0; i < _quantity; i++)
+            try
             {
-                M4Food.Views.CartService.Current.AddOrUpdateItem(_itemName, _storeName);
-            }
+                for (int i = 0; i < _quantity; i++)
+                {
+                    M4Food.Views.CartService.Current.AddOrUpdateItem(_itemName, _storeName);
+                }
 
-            await DisplayAlert("Added to Cart", $"{_quantity} x {_itemName} added to your cart!", "OK");
-            await Navigation.PopAsync();
+                await DisplayAlert("Added to Cart", $"{_quantity} x {_itemName} added to your cart!", "OK");
+                await Navigation.PopAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log and surface a friendly error instead of crashing the app
+                System.Diagnostics.Debug.WriteLine($"AddToCart error: {ex}");
+                try
+                {
+                    var logDir = FileSystem.AppDataDirectory;
+                    var logPath = Path.Combine(logDir, "photo_debug.log");
+                    var entry = $"[{DateTime.UtcNow:O}] AddToCart error: {ex}{Environment.NewLine}";
+                    await File.AppendAllTextAsync(logPath, entry);
+                }
+                catch { /* swallow logging errors */ }
+
+                await DisplayAlert("Error", "Failed to add item to cart. Please try again.", "OK");
+            }
         }
     }
 }
