@@ -4,7 +4,7 @@ Cross-platform .NET MAUI application for the M4Food team.
 
 About this app
 --------------
-M4Food is a cross-platform mobile app built with .NET MAUI that helps users browse stores, add bakery and grocery items to a cart, place orders, and register stores with photos. It focuses on a robust mobile UX with offline-capable storage and reliable image upload to Cloudinary.
+M4Food is a cross-platform mobile app built with .NET MAUI that serves as a platform for people in need to claim free bread donations. Donors (stores or volunteers) can post available bread items with pickup details; users who need help can browse, reserve, and collect those free items. The app emphasizes simple pickup flows, reliable image upload to Cloudinary, and offline-capable local storage.
 
 Key capabilities
 ----------------
