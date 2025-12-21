@@ -6,6 +6,9 @@ using System.Linq;
 using Microsoft.Maui.Controls;
 using M4Food.Views;
 using M4Food.Services;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices.Sensors;
+
 
 namespace M4Food.ViewModels
 {
@@ -275,12 +278,29 @@ namespace M4Food.ViewModels
 
         private async void OnMapTapped()
         {
-            var page = Application.Current?.MainPage;
-            if (page != null)
+            try
             {
-                await page.DisplayAlert("Location", "Opening map location selector...", "OK");
+               
+                string bakery1 = "WELOVE BAKERY UNICITY";
+                string bakery2 = "Vin Bakery";
+
+                string searchQuery = $"{bakery1} OR {bakery2}";
+
+                string googleMapsUrl =
+                    $"https://www.google.com/maps/search/?api=1&query={Uri.EscapeDataString(searchQuery)}";
+
+                await Launcher.Default.OpenAsync(googleMapsUrl);
+            }
+            catch (Exception ex)
+            {
+                await Application.Current.MainPage.DisplayAlert(
+                    "Error",
+                    ex.Message,
+                    "OK");
             }
         }
+
+
 
         private async void OnFreeDeliveryTapped()
         {

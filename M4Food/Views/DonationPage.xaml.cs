@@ -8,6 +8,15 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.ApplicationModel;
 #endif
 using System.Net.Http;
+using M4Food.Services;
+using M4Food.Models.DTOs;
+using Plugin.Firebase.Auth;
+using Microsoft.Maui.Storage;
+using Microsoft.Maui.ApplicationModel;
+#if ANDROID
+using Microsoft.Maui.ApplicationModel;
+#endif
+using System.Net.Http;
 
 namespace M4Food.Views
 {
@@ -19,9 +28,120 @@ namespace M4Food.Views
         private string? _selectedImageUrl;
         private string? _selectedImagePublicId;
 
+        private readonly ILocalCacheService _localCacheService;
+        private readonly ICloudinaryService? _cloudinaryService;
+        private string? _selectedImageLocalPath;
+        private string? _selectedImageUrl;
+        private string? _selectedImagePublicId;
+
         public DonationPage()
         {
             InitializeComponent();
+
+            // Get services from DI
+            _localCacheService = Application.Current?.Handler?.MauiContext?.Services
+                .GetService(typeof(ILocalCacheService)) as ILocalCacheService
+                ?? throw new InvalidOperationException("ILocalCacheService not registered.");
+
+            _cloudinaryService = Application.Current?.Handler?.MauiContext?.Services
+                .GetService(typeof(ICloudinaryService)) as ICloudinaryService;
+        }
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+            
+            // Load existing registration data when page appears (works offline)
+            await LoadStoreRegistrationAsync();
+        }
+
+        private async Task LoadStoreRegistrationAsync()
+        {
+            try
+            {
+                var firebaseAuth = CrossFirebaseAuth.Current;
+                var firebaseUser = firebaseAuth.CurrentUser;
+                if (firebaseUser == null)
+                {
+                    return;
+                }
+
+                // Load from local cache (works offline)
+                var registration = await _localCacheService.GetStoreRegistrationAsync(firebaseUser.Uid);
+                if (registration != null)
+                {
+                    ApplyRegistrationToUi(registration);
+                    System.Diagnostics.Debug.WriteLine("Store registration loaded from local cache");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading store registration: {ex.Message}");
+            }
+        }
+
+        private void ApplyRegistrationToUi(StoreRegistrationDto registration)
+        {
+            // Populate form fields with saved data (works offline)
+            StoreNameEntry.Text = registration.StoreName;
+            StoreAddressEntry.Text = registration.StoreAddress;
+            PhoneNumberEntry.Text = registration.PhoneNumber;
+
+            // Load image if available (prioritize local path for offline viewing)
+            if (!string.IsNullOrEmpty(registration.StoreImageLocalPath) && File.Exists(registration.StoreImageLocalPath))
+            {
+                // Use local image (works offline)
+                StoreImagePreview.Source = ImageSource.FromFile(registration.StoreImageLocalPath);
+                UploadTextLabel.Text = "Photo Loaded";
+                _selectedImageLocalPath = registration.StoreImageLocalPath;
+                _selectedImageUrl = registration.StoreImageUrl; // Keep URL for reference
+                _selectedImagePublicId = registration.StoreImagePublicId;
+            }
+            else if (!string.IsNullOrEmpty(registration.StoreImageUrl))
+            {
+                // Fallback to URL if local path not available (requires internet)
+                StoreImagePreview.Source = ImageSource.FromUri(new Uri(registration.StoreImageUrl));
+                UploadTextLabel.Text = "Photo Loaded";
+                _selectedImageUrl = registration.StoreImageUrl;
+                _selectedImagePublicId = registration.StoreImagePublicId;
+                
+                // Try to download and cache the image for offline access (background task)
+                _ = DownloadAndCacheImageAsync(registration.StoreImageUrl, registration.Id);
+            }
+        }
+
+        private async Task DownloadAndCacheImageAsync(string imageUrl, string userId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(imageUrl)) return;
+
+                // Download image to local cache for offline access
+                var localPath = Path.Combine(FileSystem.AppDataDirectory, "store_images", $"{userId}_{Path.GetFileName(imageUrl)}");
+                var directory = Path.GetDirectoryName(localPath);
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory!);
+                }
+
+                using var httpClient = new HttpClient();
+                var imageBytes = await httpClient.GetByteArrayAsync(imageUrl);
+                await File.WriteAllBytesAsync(localPath, imageBytes);
+
+                // Update registration with local path for offline access
+                var registration = await _localCacheService.GetStoreRegistrationAsync(userId);
+                if (registration != null)
+                {
+                    registration.StoreImageLocalPath = localPath;
+                    await _localCacheService.SaveStoreRegistrationAsync(registration);
+                    System.Diagnostics.Debug.WriteLine($"Store image cached locally for offline access: {localPath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to download and cache image: {ex.Message}");
+                // Continue without caching - URL will still work when online
+            }
 
             // Get services from DI
             _localCacheService = Application.Current?.Handler?.MauiContext?.Services
@@ -166,7 +286,98 @@ namespace M4Food.Views
                 }
             }
             else if (action == "Choose from Gallery")
+            if (action == "Take Photo")
             {
+#if ANDROID
+                // Request camera permission
+                var status = await Permissions.RequestAsync<Permissions.Camera>();
+                if (status != PermissionStatus.Granted)
+                {
+                    await DisplayAlert("Permission Required", 
+                        "Camera permission is required to take photos. Please enable it in app settings.", 
+                        "OK");
+                    return;
+                }
+#endif
+                try
+                {
+                    var photo = await MediaPicker.Default.CapturePhotoAsync();
+                    if (photo != null)
+                    {
+                        await LoadSelectedPhotoAsync(photo);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await DisplayAlert("Error", $"Failed to capture photo: {ex.Message}", "OK");
+                }
+            }
+            else if (action == "Choose from Gallery")
+            {
+                try
+                {
+                    var photo = await MediaPicker.Default.PickPhotoAsync(new MediaPickerOptions
+                    {
+                        Title = "Select a store photo"
+                    });
+                    if (photo != null)
+                    {
+                        await LoadSelectedPhotoAsync(photo);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await DisplayAlert("Error", $"Failed to pick photo: {ex.Message}", "OK");
+                }
+            }
+        }
+
+        private async Task LoadSelectedPhotoAsync(FileResult photo)
+        {
+            try
+            {
+                // Save to local cache first
+                var localPath = Path.Combine(FileSystem.AppDataDirectory, "store_images", $"{Guid.NewGuid()}{Path.GetExtension(photo.FileName)}");
+                var directory = Path.GetDirectoryName(localPath);
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory!);
+                }
+
+                using var sourceStream = await photo.OpenReadAsync();
+                using var fileStream = File.Create(localPath);
+                await sourceStream.CopyToAsync(fileStream);
+
+                _selectedImageLocalPath = localPath;
+                StoreImagePreview.Source = ImageSource.FromFile(localPath);
+                UploadTextLabel.Text = "Photo Selected!";
+
+                // Upload to Cloudinary if service is available
+                if (_cloudinaryService != null)
+                {
+                    try
+                    {
+                        using var uploadStream = File.OpenRead(localPath);
+                        var fileName = photo.FileName ?? $"store_{DateTime.UtcNow.Ticks}.jpg";
+                        var (url, publicId) = await _cloudinaryService.UploadImageStreamAsync(
+                            uploadStream,
+                            fileName,
+                            folder: "m4food/stores"
+                        );
+                        _selectedImageUrl = url;
+                        _selectedImagePublicId = publicId;
+                        System.Diagnostics.Debug.WriteLine($"Store image uploaded to Cloudinary: {url}");
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Failed to upload to Cloudinary: {ex.Message}");
+                        // Continue without Cloudinary URL - local path is saved
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Error", $"Failed to process photo: {ex.Message}", "OK");
                 try
                 {
 #if ANDROID
@@ -381,6 +592,60 @@ namespace M4Food.Views
 
         private async void OnSignUpClicked(object sender, EventArgs e)
         {
+            try
+            {
+                // Validate inputs
+                if (string.IsNullOrWhiteSpace(StoreNameEntry.Text))
+                {
+                    await DisplayAlert("Validation Error", "Please enter store name.", "OK");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(StoreAddressEntry.Text))
+                {
+                    await DisplayAlert("Validation Error", "Please enter store address.", "OK");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(PhoneNumberEntry.Text))
+                {
+                    await DisplayAlert("Validation Error", "Please enter phone number.", "OK");
+                    return;
+                }
+
+                var firebaseAuth = CrossFirebaseAuth.Current;
+                var firebaseUser = firebaseAuth.CurrentUser;
+                string userId = firebaseUser?.Uid ?? Guid.NewGuid().ToString();
+
+                // Check if registration already exists to preserve CreatedAt
+                var existingRegistration = await _localCacheService.GetStoreRegistrationAsync(userId);
+                
+                var registration = new StoreRegistrationDto
+                {
+                    Id = userId,
+                    StoreName = StoreNameEntry.Text.Trim(),
+                    StoreAddress = StoreAddressEntry.Text.Trim(),
+                    PhoneNumber = PhoneNumberEntry.Text.Trim(),
+                    StoreImageUrl = _selectedImageUrl,
+                    StoreImageLocalPath = _selectedImageLocalPath,
+                    StoreImagePublicId = _selectedImagePublicId,
+                    CreatedAt = existingRegistration?.CreatedAt ?? DateTime.UtcNow, // Preserve original creation date
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                // Save to local cache (works offline) - automatically saves for offline viewing
+                await _localCacheService.SaveStoreRegistrationAsync(registration);
+                System.Diagnostics.Debug.WriteLine("Store registration saved to local cache (offline-first)");
+
+                await DisplayAlert("Success", 
+                    "Store registered successfully! Your information has been saved and will be available offline.", 
+                    "OK");
+                await Navigation.PopAsync();
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Error", $"Failed to register store: {ex.Message}", "OK");
+            }
             try
             {
                 // Validate inputs
