@@ -2,6 +2,55 @@
 
 Cross-platform .NET MAUI application for the M4Food team.
 
+About this app
+--------------
+M4Food is a cross-platform mobile app built with .NET MAUI that helps users browse stores, add bakery and grocery items to a cart, place orders, and register stores with photos. It focuses on a robust mobile UX with offline-capable storage and reliable image upload to Cloudinary.
+
+Key capabilities
+----------------
+- Browse stores and items, view item details and images  
+- Add items to a local cart and checkout (order creation and basic order flow)  
+- Register stores and upload store images (Cloudinary integration with direct-stream upload + fallback)  
+- Local SQLite storage for stores, routes and image metadata for offline access  
+- Offline map tile caching and offline route calculation utilities  
+
+Tech stack
+----------
+- .NET 8 / .NET MAUI for cross-platform UI  
+- C# with MVVM-friendly services and dependency injection (Microsoft.Extensions)  
+- Firebase Authentication (Google Sign-In) for user auth  
+- Cloudinary for image storage and delivery  
+- SQLite for local storage / caching  
+- Android tooling (adb/logcat) used for debugging and diagnostics
+
+What this project achieves (E1 → E6)
+------------------------------------
+The project maps to the mandatory feature set (E1–E6) as defined in the course requirements:
+
+- **E1 — Secure User Authentication System**  
+  - Technical concepts covered: App class lifecycle, secure data storage (token handling), and connectivity.  
+  - Implementation: Firebase Authentication with Google Sign-In and token handling flows.
+
+- **E2 — MVVM-Driven Dashboard**  
+  - Technical concepts covered: MVVM architecture, app lifecycle management, and data binding.  
+  - Implementation: Pages and views wired to services via dependency injection, with binding-friendly view models and lifecycle-aware updates.
+
+- **E3 — Location-Aware Service Feature**  
+  - Technical concepts covered: Location services, navigation, and multimedia map integration.  
+  - Implementation: Offline-capable route calculation and map tile caching utilities.
+
+- **E4 — Interactive Data Submission**  
+  - Technical concepts covered: Multimedia (camera/gallery) handling and data binding with validation.  
+  - Implementation: Photo capture / picker flows and Cloudinary upload (direct-stream with safe fallback to temporary files).
+
+- **E5 — Local Caching for Offline Use**  
+  - Technical concepts covered: Data storage (SQLite / preferences) and app lifecycle-aware caching.  
+  - Implementation: Local SQLite persistence for stores, routes and image metadata; cache management utilities.
+
+- **E6 — Asynchronous Communication**  
+  - Technical concepts covered: Notifications (push/local) and asynchronous messaging patterns (MessagingCenter / toasts).  
+  - Implementation: Local notification helpers and background-safe handling for activity results and uploads.
+
 ### Development Environment
 - .NET 8 SDK with the `android` workload installed
 - Visual Studio 2022 17.8+ or VS Code with the MAUI extension
