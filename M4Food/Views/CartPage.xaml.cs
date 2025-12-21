@@ -92,7 +92,7 @@ namespace M4Food.Views
 
             
             var confirm = await DisplayAlert("Confirm Checkout",
-                "Proceed to payment?",
+                string.Empty,
                 "Yes, Checkout",
                 "Cancel");
 
@@ -125,7 +125,7 @@ namespace M4Food.Views
                 await _orderService.CreateOrderAsync(newOrder);
 
                 await DisplayAlert("Order Confirmed!",
-                    $"Order #{newOrder.OrderId} placed successfully!\n\nEstimated delivery: 30-45 minutes",
+                    $"Order #{newOrder.OrderId} placed successfully!",
                     "OK");
 
                 // Clear cart after successful order
